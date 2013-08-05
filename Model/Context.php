@@ -2,6 +2,8 @@
 
 namespace Bigfoot\Bundle\ContextBundle\Model;
 
+use Bigfoot\Bundle\ContextBundle\Exception\ContextNotFoundException;
+use Bigfoot\Bundle\ContextBundle\Exception\NotImplementedException;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\DependencyInjection\Container;
 
@@ -24,6 +26,11 @@ class Context
         $this->container = $container;
     }
 
+    /**
+     * @param $name
+     * @return mixed
+     * @throws \Bigfoot\Bundle\ContextBundle\Exception\NotImplementedException
+     */
     public function getContext($name)
     {
         $context = $this->getContextConfiguration($name);
@@ -31,7 +38,7 @@ class Context
         foreach ($context['loaders'] as $loader) {
             $loader = $this->container->get($loader);
             if (!$loader instanceof ContextLoaderInterface) {
-                throw new Exception('A ContextLoader service must implement the Bigfoot\Bundle\ContextBundle\Model\ContextLoaderInterface interface.');
+                throw new NotImplementedException('A ContextLoader service must implement the Bigfoot\Bundle\ContextBundle\Model\ContextLoaderInterface interface.');
             }
 
             if ($value = $loader->getValue()) {
@@ -42,6 +49,10 @@ class Context
         return $context['values'][$context['default_value']];
     }
 
+    /**
+     * @param $name
+     * @return array
+     */
     public function getContextValues($name)
     {
         $context = $this->getContextConfiguration($name);
@@ -55,11 +66,16 @@ class Context
         return $toReturn;
     }
 
+    /**
+     * @param $name
+     * @return mixed
+     * @throws \Bigfoot\Bundle\ContextBundle\Exception\ContextNotFoundException
+     */
     private function getContextConfiguration($name)
     {
         $contextConfiguration = $this->container->getParameter('bigfoot_contexts');
         if (!array_key_exists($name, $contextConfiguration)) {
-            throw new Exception(sprintf('The context %s is undefined. Please add it to the bigfoot_context.contexts configuration in your config.yml file.', $name));
+            throw new ContextNotFoundException(sprintf('The context %s is undefined. Please add it to the bigfoot_context.contexts configuration in your config.yml file.', $name));
         }
 
         return $contextConfiguration[$name];

@@ -4,6 +4,10 @@ namespace Bigfoot\Bundle\ContextBundle\Model;
 
 use Symfony\Component\DependencyInjection\Container;
 
+/**
+ * Class AbstractContextLoader
+ * @package Bigfoot\Bundle\ContextBundle\Model
+ */
 abstract class AbstractContextLoader implements ContextLoaderInterface
 {
     /**
@@ -19,6 +23,10 @@ abstract class AbstractContextLoader implements ContextLoaderInterface
         $this->container = $container;
     }
 
+    /**
+     * @param $key
+     * @return mixed
+     */
     protected function getValueForKey($key)
     {
         $contextConfiguration = $this->container->getParameter('bigfoot_contexts');
@@ -28,5 +36,8 @@ abstract class AbstractContextLoader implements ContextLoaderInterface
         }
     }
 
+    /**
+     * @return mixed
+     */
     public abstract function getContextName();
 }

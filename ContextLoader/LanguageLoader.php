@@ -10,6 +10,9 @@ use Bigfoot\Bundle\ContextBundle\Model\AbstractContextLoader;
  */
 class LanguageLoader extends AbstractContextLoader
 {
+    /**
+     * @return mixed
+     */
     public function getValue()
     {
         if (strpos($this->container->get('request')->getPathInfo(), '/admin') === 0) {
@@ -17,6 +20,9 @@ class LanguageLoader extends AbstractContextLoader
         }
     }
 
+    /**
+     * @return string
+     */
     public function getContextName()
     {
         return 'language';
