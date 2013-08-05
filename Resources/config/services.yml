@@ -1,0 +1,7 @@
+services:
+    bigfoot_context:
+        class:        "Bigfoot\\Bundle\\ContextBundle\\Model\\Context"
+        arguments:    [@service_container]
+    bigfoot_language_loader:
+        class:        "Bigfoot\\Bundle\\ContextBundle\\ContextLoader\\LanguageLoader"
+        arguments:    [@service_container]
