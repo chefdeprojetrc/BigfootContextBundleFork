@@ -1,0 +1,21 @@
+{
+    "name": "bigfoot/context-bundle",
+    "type": "symfony-bundle",
+    "description": "Bigfoot context bundle",
+    "keywords": [],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Guillaume Manen",
+            "email": "g.manen@c2is.fr"
+        }
+    ],
+    "require": {
+        "bigfoot/core-bundle": "dev-master"
+    },
+    "autoload": {
+        "psr-0": { "Bigfoot\\Bundle\\ContextBundle": "" }
+    },
+    "target-dir": "Bigfoot/Bundle/ContextBundle",
+    "minimum-stability": "dev"
+}
