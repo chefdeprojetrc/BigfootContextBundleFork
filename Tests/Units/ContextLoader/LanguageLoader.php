@@ -9,7 +9,7 @@ use atoum\AtoumBundle\Test\Units;
 
 /**
  * Class Context
- * @package Bigfoot\Bundle\ContextBundle\Model
+ * @package Bigfoot\Bundle\ContextBundle\ContextLoader
  */
 class LanguageLoader extends Units\Test
 {
