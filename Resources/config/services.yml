@@ -1,7 +1,16 @@
 services:
+    kernel.listener.bigfoot_context_menu_listener:
+        class: Bigfoot\Bundle\ContextBundle\Listener\MenuListener
+        tags:
+            - { name: kernel.event_listener, event: bigfoot.menu.generate, method: onMenuGenerate }
+    form.type.bigfoot_contextualizable_entities:
+        class: Bigfoot\Bundle\ContextBundle\Form\ContextualizableEntitiesType
+        arguments: [ @service_container ]
+        tags:
+            - { name: form.type, alias: bigfoot_contextualizable_entities }
     bigfoot_context:
         class:        "Bigfoot\\Bundle\\ContextBundle\\Model\\Context"
-        arguments:    [@service_container]
+        arguments:    [ @service_container ]
     bigfoot_language_loader:
         class:        "Bigfoot\\Bundle\\ContextBundle\\ContextLoader\\LanguageLoader"
-        arguments:    [@service_container]
+        arguments:    [ @service_container ]

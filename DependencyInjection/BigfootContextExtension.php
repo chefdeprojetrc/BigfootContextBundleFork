@@ -23,6 +23,7 @@ class BigfootContextExtension extends Extension
         $config = $this->processConfiguration($configuration, $configs);
 
         $container->setParameter('bigfoot_contexts', $config['contexts']);
+        $container->setParameter('bigfoot_context_entities', $config['entities']);
 
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');
