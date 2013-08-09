@@ -22,6 +22,9 @@ class Configuration implements ConfigurationInterface
 
         $rootNode
             ->children()
+                ->arrayNode('entities')
+                    ->prototype('scalar')->end()
+                ->end()
                 ->arrayNode('contexts')
                     ->useAttributeAsKey('name')
                     ->prototype('array')
@@ -44,6 +47,7 @@ class Configuration implements ConfigurationInterface
                                 ->end()
                             ->end()
                             ->scalarNode('default_value')->isRequired()->end()
+                            ->scalarNode('label')->end()
                         ->end()
                     ->end()
                 ->end()
