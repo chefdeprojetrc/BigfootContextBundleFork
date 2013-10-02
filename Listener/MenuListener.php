@@ -22,7 +22,7 @@ class MenuListener
 
         if ($menu->getName() == 'sidebar_menu')
         {
-            $menu->addOnItem('sidebar_settings', new Item('sidebar_settings_context', 'Context management', 'admin_context'));
+            $menu->addOnItem('sidebar_settings', new Item('sidebar_settings_context', 'Context', 'admin_context', array(), array(), 'globe'));
         }
     }
 }
