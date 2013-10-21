@@ -14,3 +14,8 @@ services:
     bigfoot_language_loader:
         class:        "Bigfoot\\Bundle\\ContextBundle\\ContextLoader\\LanguageLoader"
         arguments:    [ @service_container ]
+    bigfoot.listener.bigfoot_core_kernel_listener:
+        class: Bigfoot\Bundle\ContextBundle\Listener\KernelListener
+        arguments: [ @bigfoot_context ]
+        tags:
+            - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest, priority: 10 }
