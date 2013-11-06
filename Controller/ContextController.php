@@ -6,19 +6,45 @@ use Bigfoot\Bundle\ContextBundle\Entity\ContextualizableEntities;
 use Bigfoot\Bundle\ContextBundle\Entity\ContextualizableEntity;
 use Bigfoot\Bundle\CoreBundle\Controller\AdminControllerInterface;
 
+use Bigfoot\Bundle\CoreBundle\Crud\CrudController;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Cache;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Context controller.
  *
+ * @Cache(maxage="0", smaxage="0", public="false")
  * @Route("/admin/context")
  */
-class ContextController extends Controller implements AdminControllerInterface
+class ContextController extends CrudController
 {
+    public function getEntity()
+    {
+        return 'BigfootContextBundle:ContextualizableEntities';
+    }
+
+    public function getName()
+    {
+        return 'admin_context';
+    }
+
+    public function getFields()
+    {
+        return array(
+            'id'    => 'Slug',
+            'label' => 'Label',
+        );
+    }
+
+    protected function getEntityLabelPlural()
+    {
+        return 'Contextualizable Entities';
+    }
+
     /**
      * @return string Route to be used as the homepage for this controller
      */
@@ -50,10 +76,16 @@ class ContextController extends Controller implements AdminControllerInterface
         }
 
         return array(
-            'entities'              => $contextsConfig,
-            'edit_route'            => 'admin_context_edit',
-            'entity_label_plural'   => 'Contexts',
-            'fields'                => array('id' => 'Slug', 'label' => 'Name'),
+            'list_items'        => $contextsConfig,
+            'list_edit_route'   => $this->getRouteNameForAction('edit'),
+            'list_title'        => $this->getEntityLabelPlural(),
+            'list_fields'       => $this->getFields(),
+            'breadcrumbs'       => array(
+                array(
+                    'url'   => $this->generateUrl($this->getRouteNameForAction('index')),
+                    'label' => $this->getEntityLabelPlural()
+                ),
+            ),
         );
     }
 
@@ -71,11 +103,22 @@ class ContextController extends Controller implements AdminControllerInterface
         $form = $this->createForm('bigfoot_contextualizable_entities', $entity);
 
         return array(
-            'entity'        => $entity,
             'form'          => $form->createView(),
-            'create_route'  => 'admin_context_create',
-            'index_route'   => 'admin_context',
-            'entity_label'  => 'Contextualizable entities',
+            'form_title'    => sprintf('%s creation', $this->getEntityLabel()),
+            'form_action'   => $this->generateUrl($this->getRouteNameForAction('create')),
+            'form_submit'   => 'Create',
+            'cancel_route'  => $this->getRouteNameForAction('index'),
+            'isAjax'        => $this->get('request')->isXmlHttpRequest(),
+            'breadcrumbs'       => array(
+                array(
+                    'url'   => $this->generateUrl($this->getRouteNameForAction('index')),
+                    'label' => $this->getEntityLabelPlural()
+                ),
+                array(
+                    'url'   => $this->generateUrl($this->getRouteNameForAction('new'), array('context' => $context)),
+                    'label' => sprintf('%s creation', $this->getEntityLabel())
+                ),
+            ),
         );
     }
 
@@ -98,12 +141,42 @@ class ContextController extends Controller implements AdminControllerInterface
             $em->persist($entity);
             $em->flush();
 
+            $this->get('session')->getFlashBag()->add(
+                'success',
+                $this->renderView('BigfootCoreBundle:includes:flash.html.twig', array(
+                    'icon' => 'ok',
+                    'heading' => 'Success!',
+                    'message' => sprintf('The %s has been created.', $this->getEntityName()),
+                    'actions' => array(
+                        array(
+                            'route' => $this->generateUrl($this->getRouteNameForAction('index')),
+                            'label' => 'Back to the listing',
+                            'type'  => 'success',
+                        ),
+                    )
+                ))
+            );
+
             return $this->redirect($this->generateUrl('admin_context'));
         }
 
         return array(
-            'entity' => $entity,
-            'form'   => $form->createView(),
+            'form'          => $form->createView(),
+            'form_title'    => sprintf('%s creation', $this->getEntityLabel()),
+            'form_action'   => $this->generateUrl($this->getRouteNameForAction('create')),
+            'form_submit'   => 'Create',
+            'cancel_route'  => $this->getRouteNameForAction('index'),
+            'isAjax'        => $this->get('request')->isXmlHttpRequest(),
+            'breadcrumbs'       => array(
+                array(
+                    'url'   => $this->generateUrl($this->getRouteNameForAction('index')),
+                    'label' => $this->getEntityLabelPlural()
+                ),
+                array(
+                    'url'   => $this->generateUrl($this->getRouteNameForAction('new')),
+                    'label' => sprintf('%s creation', $this->getEntityLabel())
+                ),
+            ),
         );
     }
 
@@ -125,11 +198,22 @@ class ContextController extends Controller implements AdminControllerInterface
         $editForm = $this->createForm('bigfoot_contextualizable_entities', $entity);
 
         return array(
-            'entity'        => $entity,
-            'edit_form'     => $editForm->createView(),
-            'update_route'  => 'admin_context_update',
-            'index_route'   => 'admin_context',
-            'entity_label'  => 'Contextualizable entities',
+            'form'              => $editForm->createView(),
+            'form_method'       => 'PUT',
+            'form_action'       => $this->generateUrl($this->getRouteNameForAction('update'), array('id' => $entity->getId())),
+            'form_cancel_route' => $this->getRouteNameForAction('index'),
+            'form_title'        => sprintf('%s edit', $this->getEntityLabel()),
+            'isAjax'            => $this->get('request')->isXmlHttpRequest(),
+            'breadcrumbs'       => array(
+                array(
+                    'url'   => $this->generateUrl($this->getRouteNameForAction('index')),
+                    'label' => $this->getEntityLabelPlural()
+                ),
+                array(
+                    'url'   => $this->generateUrl($this->getRouteNameForAction('edit'), array('id' => $entity->getId())),
+                    'label' => sprintf('%s edit', $this->getEntityLabel())
+                ),
+            ),
         );
     }
 
@@ -157,12 +241,42 @@ class ContextController extends Controller implements AdminControllerInterface
             $em->persist($entity);
             $em->flush();
 
+            $this->get('session')->getFlashBag()->add(
+                'success',
+                $this->renderView('BigfootCoreBundle:includes:flash.html.twig', array(
+                    'icon' => 'ok',
+                    'heading' => 'Success!',
+                    'message' => sprintf('The %s has been updated.', $this->getEntityName()),
+                    'actions' => array(
+                        array(
+                            'route' => $this->generateUrl($this->getRouteNameForAction('index')),
+                            'label' => 'Back to the listing',
+                            'type'  => 'success',
+                        ),
+                    )
+                ))
+            );
+
             return $this->redirect($this->generateUrl('admin_context_edit', array('id' => $entity->getContext())));
         }
 
         return array(
-            'entity'        => $entity,
-            'edit_form'     => $editForm->createView(),
+            'form'              => $editForm->createView(),
+            'form_method'       => 'PUT',
+            'form_action'       => $this->generateUrl($this->getRouteNameForAction('update'), array('id' => $entity->getId())),
+            'form_cancel_route' => $this->getRouteNameForAction('index'),
+            'form_title'        => sprintf('%s edit', $this->getEntityLabel()),
+            'isAjax'            => $this->get('request')->isXmlHttpRequest(),
+            'breadcrumbs'       => array(
+                array(
+                    'url'   => $this->generateUrl($this->getRouteNameForAction('index')),
+                    'label' => $this->getEntityLabelPlural()
+                ),
+                array(
+                    'url'   => $this->generateUrl($this->getRouteNameForAction('edit'), array('id' => $entity->getId())),
+                    'label' => sprintf('%s edit', $this->getEntityLabel())
+                ),
+            ),
         );
     }
 }
