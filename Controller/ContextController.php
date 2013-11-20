@@ -12,7 +12,9 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Cache;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Context controller.
@@ -82,7 +84,7 @@ class ContextController extends CrudController
             'list_fields'       => $this->getFields(),
             'breadcrumbs'       => array(
                 array(
-                    'url'   => $this->generateUrl($this->getRouteNameForAction('index')),
+                    'url'   => $this->container->get('router')->generate($this->getRouteNameForAction('index')),
                     'label' => $this->getEntityLabelPlural()
                 ),
             ),
@@ -100,22 +102,22 @@ class ContextController extends CrudController
     {
         $entity = new ContextualizableEntities();
         $entity->setContext($context);
-        $form = $this->createForm('bigfoot_contextualizable_entities', $entity);
+        $form = $this->container->get('form.factory')->create('bigfoot_contextualizable_entities', $entity);
 
         return array(
             'form'          => $form->createView(),
             'form_title'    => sprintf('%s creation', $this->getEntityLabel()),
-            'form_action'   => $this->generateUrl($this->getRouteNameForAction('create')),
+            'form_action'   => $this->container->get('router')->generate($this->getRouteNameForAction('create')),
             'form_submit'   => 'Create',
             'cancel_route'  => $this->getRouteNameForAction('index'),
-            'isAjax'        => $this->get('request')->isXmlHttpRequest(),
+            'isAjax'        => $this->container->get('request')->isXmlHttpRequest(),
             'breadcrumbs'       => array(
                 array(
-                    'url'   => $this->generateUrl($this->getRouteNameForAction('index')),
+                    'url'   => $this->container->get('router')->generate($this->getRouteNameForAction('index')),
                     'label' => $this->getEntityLabelPlural()
                 ),
                 array(
-                    'url'   => $this->generateUrl($this->getRouteNameForAction('new'), array('context' => $context)),
+                    'url'   => $this->container->get('router')->generate($this->getRouteNameForAction('new'), array('context' => $context)),
                     'label' => sprintf('%s creation', $this->getEntityLabel())
                 ),
             ),
@@ -132,24 +134,24 @@ class ContextController extends CrudController
     public function createAction(Request $request)
     {
         $entity = new ContextualizableEntities();
-        $form = $this->createForm('bigfoot_contextualizable_entities', $entity);
+        $form = $this->container->get('form.factory')->create('bigfoot_contextualizable_entities', $entity);
 
         $form->submit($request);
 
         if ($form->isValid()) {
-            $em = $this->getDoctrine()->getManager();
+            $em = $this->container->get('doctrine')->getManager();
             $em->persist($entity);
             $em->flush();
 
-            $this->get('session')->getFlashBag()->add(
+            $this->container->get('session')->getFlashBag()->add(
                 'success',
-                $this->renderView('BigfootCoreBundle:includes:flash.html.twig', array(
+                $this->container->get('templating')->render('BigfootCoreBundle:includes:flash.html.twig', array(
                     'icon' => 'ok',
                     'heading' => 'Success!',
                     'message' => sprintf('The %s has been created.', $this->getEntityName()),
                     'actions' => array(
                         array(
-                            'route' => $this->generateUrl($this->getRouteNameForAction('index')),
+                            'route' => $this->container->get('router')->generate($this->getRouteNameForAction('index')),
                             'label' => 'Back to the listing',
                             'type'  => 'success',
                         ),
@@ -157,23 +159,23 @@ class ContextController extends CrudController
                 ))
             );
 
-            return $this->redirect($this->generateUrl('admin_context'));
+            return new RedirectResponse($this->container->get('router')->generate('admin_context'));
         }
 
         return array(
             'form'          => $form->createView(),
             'form_title'    => sprintf('%s creation', $this->getEntityLabel()),
-            'form_action'   => $this->generateUrl($this->getRouteNameForAction('create')),
+            'form_action'   => $this->container->get('router')->generate($this->getRouteNameForAction('create')),
             'form_submit'   => 'Create',
             'cancel_route'  => $this->getRouteNameForAction('index'),
-            'isAjax'        => $this->get('request')->isXmlHttpRequest(),
+            'isAjax'        => $this->container->get('request')->isXmlHttpRequest(),
             'breadcrumbs'       => array(
                 array(
-                    'url'   => $this->generateUrl($this->getRouteNameForAction('index')),
+                    'url'   => $this->container->get('router')->generate($this->getRouteNameForAction('index')),
                     'label' => $this->getEntityLabelPlural()
                 ),
                 array(
-                    'url'   => $this->generateUrl($this->getRouteNameForAction('new')),
+                    'url'   => $this->container->get('router')->generate($this->getRouteNameForAction('new')),
                     'label' => sprintf('%s creation', $this->getEntityLabel())
                 ),
             ),
@@ -187,30 +189,30 @@ class ContextController extends CrudController
      */
     public function editAction($id)
     {
-        $em = $this->getDoctrine()->getManager();
+        $em = $this->container->get('doctrine')->getManager();
 
         $entity = $em->getRepository('BigfootContextBundle:ContextualizableEntities')->findOneBy(array('context' => $id));
 
         if (!$entity) {
-            return $this->redirect($this->generateUrl('admin_context_new', array('context' => $id)));
+            return new RedirectResponse($this->container->get('router')->generate('admin_context_new', array('context' => $id)));
         }
 
-        $editForm = $this->createForm('bigfoot_contextualizable_entities', $entity);
+        $editForm = $this->container->get('form.factory')->create('bigfoot_contextualizable_entities', $entity);
 
         return array(
             'form'              => $editForm->createView(),
             'form_method'       => 'PUT',
-            'form_action'       => $this->generateUrl($this->getRouteNameForAction('update'), array('id' => $entity->getId())),
+            'form_action'       => $this->container->get('router')->generate($this->getRouteNameForAction('update'), array('id' => $entity->getId())),
             'form_cancel_route' => $this->getRouteNameForAction('index'),
             'form_title'        => sprintf('%s edit', $this->getEntityLabel()),
-            'isAjax'            => $this->get('request')->isXmlHttpRequest(),
+            'isAjax'            => $this->container->get('request')->isXmlHttpRequest(),
             'breadcrumbs'       => array(
                 array(
-                    'url'   => $this->generateUrl($this->getRouteNameForAction('index')),
+                    'url'   => $this->container->get('router')->generate($this->getRouteNameForAction('index')),
                     'label' => $this->getEntityLabelPlural()
                 ),
                 array(
-                    'url'   => $this->generateUrl($this->getRouteNameForAction('edit'), array('id' => $entity->getId())),
+                    'url'   => $this->container->get('router')->generate($this->getRouteNameForAction('edit'), array('id' => $entity->getId())),
                     'label' => sprintf('%s edit', $this->getEntityLabel())
                 ),
             ),
@@ -226,30 +228,30 @@ class ContextController extends CrudController
      */
     public function updateAction(Request $request, $id)
     {
-        $em = $this->getDoctrine()->getManager();
+        $em = $this->container->get('doctrine')->getManager();
 
         $entity = $em->getRepository('BigfootContextBundle:ContextualizableEntities')->find($id);
 
         if (!$entity) {
-            throw $this->createNotFoundException(sprintf('Unable to find %s entity.', 'ContextualizableEntities'));
+            throw new NotFoundHttpException(sprintf('Unable to find %s entity.', 'ContextualizableEntities'));
         }
 
-        $editForm = $this->createForm('bigfoot_contextualizable_entities', $entity);
+        $editForm = $this->container->get('form.factory')->create('bigfoot_contextualizable_entities', $entity);
         $editForm->submit($request);
 
         if ($editForm->isValid()) {
             $em->persist($entity);
             $em->flush();
 
-            $this->get('session')->getFlashBag()->add(
+            $this->container->get('session')->getFlashBag()->add(
                 'success',
-                $this->renderView('BigfootCoreBundle:includes:flash.html.twig', array(
+                $this->container->get('templating')->render('BigfootCoreBundle:includes:flash.html.twig', array(
                     'icon' => 'ok',
                     'heading' => 'Success!',
                     'message' => sprintf('The %s has been updated.', $this->getEntityName()),
                     'actions' => array(
                         array(
-                            'route' => $this->generateUrl($this->getRouteNameForAction('index')),
+                            'route' => $this->container->get('router')->generate($this->getRouteNameForAction('index')),
                             'label' => 'Back to the listing',
                             'type'  => 'success',
                         ),
@@ -257,23 +259,23 @@ class ContextController extends CrudController
                 ))
             );
 
-            return $this->redirect($this->generateUrl('admin_context_edit', array('id' => $entity->getContext())));
+            return new RedirectResponse($this->container->get('router')->generate('admin_context_edit', array('id' => $entity->getContext())));
         }
 
         return array(
             'form'              => $editForm->createView(),
             'form_method'       => 'PUT',
-            'form_action'       => $this->generateUrl($this->getRouteNameForAction('update'), array('id' => $entity->getId())),
+            'form_action'       => $this->container->get('router')->generate($this->getRouteNameForAction('update'), array('id' => $entity->getId())),
             'form_cancel_route' => $this->getRouteNameForAction('index'),
             'form_title'        => sprintf('%s edit', $this->getEntityLabel()),
-            'isAjax'            => $this->get('request')->isXmlHttpRequest(),
+            'isAjax'            => $this->container->get('request')->isXmlHttpRequest(),
             'breadcrumbs'       => array(
                 array(
-                    'url'   => $this->generateUrl($this->getRouteNameForAction('index')),
+                    'url'   => $this->container->get('router')->generate($this->getRouteNameForAction('index')),
                     'label' => $this->getEntityLabelPlural()
                 ),
                 array(
-                    'url'   => $this->generateUrl($this->getRouteNameForAction('edit'), array('id' => $entity->getId())),
+                    'url'   => $this->container->get('router')->generate($this->getRouteNameForAction('edit'), array('id' => $entity->getId())),
                     'label' => sprintf('%s edit', $this->getEntityLabel())
                 ),
             ),
