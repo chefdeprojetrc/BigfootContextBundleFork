@@ -2,19 +2,18 @@
 
 namespace Bigfoot\Bundle\ContextBundle\Controller;
 
-use Bigfoot\Bundle\ContextBundle\Entity\ContextualizableEntities;
-use Bigfoot\Bundle\ContextBundle\Entity\ContextualizableEntity;
-use Bigfoot\Bundle\CoreBundle\Controller\AdminControllerInterface;
-
-use Bigfoot\Bundle\CoreBundle\Crud\CrudController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Cache;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+
+use Bigfoot\Bundle\CoreBundle\Controller\CrudController;
+use Bigfoot\Bundle\CoreBundle\Controller\AdminControllerInterface;
+use Bigfoot\Bundle\ContextBundle\Entity\ContextualizableEntities;
+use Bigfoot\Bundle\ContextBundle\Entity\ContextualizableEntity;
 
 /**
  * Context controller.
