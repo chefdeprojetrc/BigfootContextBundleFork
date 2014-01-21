@@ -88,6 +88,12 @@ class ContextController extends CrudController
                     'label' => $this->getEntityLabelPlural()
                 ),
             ),
+            'actions'           => array(
+                array(
+                    'href'  => $this->container->get('router')->generate($this->getRouteNameForAction('edit'), array('id' => '__ID__')),
+                    'icon'  => 'pencil',
+                )
+            )
         );
     }
 
