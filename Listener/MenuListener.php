@@ -2,27 +2,45 @@
 
 namespace Bigfoot\Bundle\ContextBundle\Listener;
 
+use Symfony\Component\EventDispatcher\GenericEvent;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+
 use Bigfoot\Bundle\CoreBundle\Event\MenuEvent;
-use Bigfoot\Bundle\CoreBundle\Theme\Menu\Item;
 
 /**
- * Adds the context submenu into the sidebar.
- *
- * Class MenuListener
- * @package Bigfoot\Bundle\ContextBundle\Listener
+ * Menu Listener
  */
-class MenuListener
+class MenuListener implements EventSubscriberInterface
 {
     /**
-     * @param MenuEvent $event
+     * Get subscribed events
+     *
+     * @return array
      */
-    public function onMenuGenerate(MenuEvent $event)
+    public static function getSubscribedEvents()
     {
-        $menu = $event->getMenu();
+        return array(
+            MenuEvent::GENERATE_MAIN => 'onGenerateMain',
+        );
+    }
 
-        if ($menu->getName() == 'sidebar_menu')
-        {
-            $menu->addOnItem('sidebar_settings', new Item('sidebar_settings_context', 'Context', 'admin_context', array(), array(), 'globe'));
-        }
+    /**
+     * @param GenericEvent $event
+     */
+    public function onGenerateMain(GenericEvent $event)
+    {
+        $menu          = $event->getSubject();
+        $structureMenu = $menu->getChild('structure');
+
+        $structureMenu->addChild(
+            'context',
+            array(
+                'label'  => 'Context',
+                'route'  => 'admin_context',
+                'linkAttributes' => array(
+                    'icon' => 'globe',
+                )
+            )
+        );
     }
 }
