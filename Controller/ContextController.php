@@ -65,7 +65,7 @@ class ContextController extends CrudController
     /**
      * @Route("/", name="admin_context")
      * @Method("GET")
-     * @Template("BigfootCoreBundle:crud:index.html.twig")
+     * @Template("BigfootCoreBundle:Crud:index.html.twig")
      */
     public function indexAction()
     {
@@ -77,23 +77,37 @@ class ContextController extends CrudController
         }
 
         return array(
-            'list_items'        => $contextsConfig,
-            'list_edit_route'   => $this->getRouteNameForAction('edit'),
-            'list_title'        => $this->getEntityLabelPlural(),
-            'list_fields'       => $this->getFields(),
-            'breadcrumbs'       => array(
+            'list_items'    => $contextsConfig,
+            'list_title'    => $this->getEntityLabelPlural(),
+            'list_fields'   => $this->getFields(),
+            'actions'       => $this->getActions(),
+            // 'globalActions' => $this->getGlobalActions(),
+            'breadcrumbs'   => array(
                 array(
-                    'url'   => $this->container->get('router')->generate($this->getRouteNameForAction('index')),
-                    'label' => $this->getEntityLabelPlural()
-                ),
-            ),
-            'actions'           => array(
-                array(
-                    'href'  => $this->container->get('router')->generate($this->getRouteNameForAction('edit'), array('id' => '__ID__')),
-                    'icon'  => 'pencil',
+                    'label' => $this->getEntityLabelPlural(),
+                    'url'   => $this->generateUrl($this->getRouteNameForAction('index')),
                 )
-            )
+            ),
         );
+
+        // return array(
+        //     'list_items'      => $contextsConfig,
+        //     'list_edit_route' => $this->getRouteNameForAction('edit'),
+        //     'list_title'      => $this->getEntityLabelPlural(),
+        //     'list_fields'     => $this->getFields(),
+        //     'breadcrumbs'     => array(
+        //         array(
+        //             'url'   => $this->container->get('router')->generate($this->getRouteNameForAction('index')),
+        //             'label' => $this->getEntityLabelPlural()
+        //         ),
+        //     ),
+        //     'actions' => array(
+        //         array(
+        //             'href'  => $this->container->get('router')->generate($this->getRouteNameForAction('edit'), array('id' => '__ID__')),
+        //             'icon'  => 'pencil',
+        //         )
+        //     )
+        // );
     }
 
     /**
@@ -101,7 +115,7 @@ class ContextController extends CrudController
      *
      * @Route("/new/{context}", name="admin_context_new")
      * @Method("GET")
-     * @Template("BigfootCoreBundle:crud:new.html.twig")
+     * @Template("BigfootCoreBundle:Crud:form.html.twig")
      */
     public function newAction($context)
     {
@@ -134,7 +148,7 @@ class ContextController extends CrudController
      *
      * @Route("/", name="admin_context_create")
      * @Method("POST")
-     * @Template("BigfootCoreBundle:crud:new.html.twig")
+     * @Template("BigfootCoreBundle:Crud:form.html.twig")
      */
     public function createAction(Request $request)
     {
@@ -190,7 +204,7 @@ class ContextController extends CrudController
     /**
      * @Route("/{id}", name="admin_context_edit")
      * @Method("GET")
-     * @Template("BigfootCoreBundle:crud:edit.html.twig")
+     * @Template("BigfootCoreBundle:Crud:form.html.twig")
      */
     public function editAction($id)
     {
@@ -229,7 +243,7 @@ class ContextController extends CrudController
      *
      * @Route("/{id}", name="admin_context_update")
      * @Method("PUT")
-     * @Template("BigfootCoreBundle:crud:edit.html.twig")
+     * @Template("BigfootCoreBundle:Crud:form.html.twig")
      */
     public function updateAction(Request $request, $id)
     {
