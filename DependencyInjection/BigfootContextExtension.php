@@ -22,7 +22,13 @@ class BigfootContextExtension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
-        $container->setParameter('bigfoot_contexts', $config['contexts']);
+        $contextConfig = $config['contexts'];
+        if (isset($contextConfig['language'])) {
+            $contextConfig['language']['values'] = $container->getParameter('bigfoot_core.languages.front');
+        }
+
+        $container->setParameter('bigfoot_contexts', $contextConfig);
+
         $container->setParameter('bigfoot_context_entities', $config['entities']);
 
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));

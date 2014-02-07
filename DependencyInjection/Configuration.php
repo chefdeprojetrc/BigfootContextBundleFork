@@ -37,8 +37,6 @@ class Configuration implements ConfigurationInterface
                             ->end()
                             ->arrayNode('values')
                                 ->useAttributeAsKey('name')
-                                ->isRequired()
-                                ->requiresAtLeastOneElement()
                                 ->prototype('array')
                                     ->children()
                                         ->scalarNode('label')->isRequired()->end()
