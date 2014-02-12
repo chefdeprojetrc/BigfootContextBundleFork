@@ -19,7 +19,7 @@ use Bigfoot\Bundle\ContextBundle\Entity\ContextualizableEntity;
  * Context controller.
  *
  * @Cache(maxage="0", smaxage="0", public="false")
- * @Route("/admin/context")
+ * @Route("/context")
  */
 class ContextController extends CrudController
 {
@@ -65,7 +65,7 @@ class ContextController extends CrudController
     /**
      * @Route("/", name="admin_context")
      * @Method("GET")
-     * @Template("BigfootCoreBundle:Crud:index.html.twig")
+     * @Template("BigfootCoreBundle:crud:index.html.twig")
      */
     public function indexAction()
     {
@@ -115,7 +115,7 @@ class ContextController extends CrudController
      *
      * @Route("/new/{context}", name="admin_context_new")
      * @Method("GET")
-     * @Template("BigfootCoreBundle:Crud:form.html.twig")
+     * @Template("BigfootCoreBundle:crud:form.html.twig")
      */
     public function newAction($context)
     {
@@ -148,7 +148,7 @@ class ContextController extends CrudController
      *
      * @Route("/", name="admin_context_create")
      * @Method("POST")
-     * @Template("BigfootCoreBundle:Crud:form.html.twig")
+     * @Template("BigfootCoreBundle:crud:form.html.twig")
      */
     public function createAction(Request $request)
     {
@@ -204,7 +204,7 @@ class ContextController extends CrudController
     /**
      * @Route("/{id}", name="admin_context_edit")
      * @Method("GET")
-     * @Template("BigfootCoreBundle:Crud:form.html.twig")
+     * @Template("BigfootCoreBundle:crud:form.html.twig")
      */
     public function editAction($id)
     {
@@ -243,7 +243,7 @@ class ContextController extends CrudController
      *
      * @Route("/{id}", name="admin_context_update")
      * @Method("PUT")
-     * @Template("BigfootCoreBundle:Crud:form.html.twig")
+     * @Template("BigfootCoreBundle:crud:form.html.twig")
      */
     public function updateAction(Request $request, $id)
     {
