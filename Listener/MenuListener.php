@@ -6,12 +6,26 @@ use Symfony\Component\EventDispatcher\GenericEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 use Bigfoot\Bundle\CoreBundle\Event\MenuEvent;
+use Symfony\Component\Security\Core\SecurityContextInterface;
 
 /**
  * Menu Listener
  */
 class MenuListener implements EventSubscriberInterface
 {
+    /**
+     * @var \Symfony\Component\Security\Core\SecurityContextInterface
+     */
+    private $security;
+
+    /**
+     * @param SecurityContextInterface $security
+     */
+    public function __construct(SecurityContextInterface $security)
+    {
+        $this->security = $security;
+    }
+
     /**
      * Get subscribed events
      *
@@ -32,15 +46,17 @@ class MenuListener implements EventSubscriberInterface
         $menu          = $event->getSubject();
         $structureMenu = $menu->getChild('structure');
 
-        $structureMenu->addChild(
-            'context',
-            array(
-                'label'  => 'Context',
-                'route'  => 'admin_context',
-                'linkAttributes' => array(
-                    'icon' => 'globe',
+        if ($this->security->isGranted('ROLE_ADMIN')) {
+            $structureMenu->addChild(
+                'context',
+                array(
+                    'label'  => 'Context',
+                    'route'  => 'admin_context',
+                    'linkAttributes' => array(
+                        'icon' => 'globe',
+                    )
                 )
-            )
-        );
+            );
+        }
     }
 }
