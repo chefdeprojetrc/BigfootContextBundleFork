@@ -32,7 +32,9 @@ abstract class AbstractContextLoader implements ContextLoaderInterface
         $contextConfiguration = $this->container->getParameter('bigfoot_contexts');
 
         if (array_key_exists($key, $contextConfiguration[$this->getContextName()]['values'])) {
-            return $contextConfiguration[$this->getContextName()]['values'][$key];
+            $contextValues = $contextConfiguration[$this->getContextName()]['values'][$key];
+            $contextValues['key'] = $key;
+            return $contextValues;
         }
     }
 

@@ -31,9 +31,26 @@ class Context
      * @return mixed
      * @throws \Bigfoot\Bundle\ContextBundle\Exception\NotImplementedException
      */
-    public function getContext($name)
+    public function getContext($name, $value = null)
     {
         $context = $this->getContextConfiguration($name);
+
+        if ($value !== null) {
+            $contextConfiguration = null;
+            foreach ($context['values'] as $key => $contextValue) {
+                if ($contextValue['value'] == $value) {
+                    $contextConfiguration = $contextValue;
+                    $contextConfiguration['key'] = $key;
+                    break;
+                }
+            }
+
+            if (!$contextConfiguration) {
+                throw new \Exception(sprintf('Context value "%s" for context "%s" was not found. Allowed context values are (%s)', $value, $name, implode(', ', array_keys($context['values']))));
+            }
+
+            return $contextConfiguration;
+        }
 
         foreach ($context['loaders'] as $loader) {
             $loader = $this->container->get($loader);
@@ -46,7 +63,10 @@ class Context
             }
         }
 
-        return $context['values'][$context['default_value']];
+        $contextValues = $context['values'][$context['default_value']];
+        $contextValues['key'] = $context['default_value'];
+
+        return $contextValues;
     }
 
     /**
