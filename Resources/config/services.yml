@@ -16,9 +16,10 @@ services:
         tags:
             - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest, priority: -10 }
 
-    # Menu Listener
-    bigfoot_context.listener.menu:
-        class: Bigfoot\Bundle\ContextBundle\Listener\MenuListener
-        arguments: [@security.context]
+    # Menu Subscriber
+    bigfoot_context.subscriber.menu:
+        class: Bigfoot\Bundle\ContextBundle\Subscriber\MenuSubscriber
+        arguments:
+            - @security.context
         tags:
             - { name: kernel.event_subscriber }
