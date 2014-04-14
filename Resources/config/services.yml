@@ -1,20 +1,66 @@
 services:
-    form.type.bigfoot_contextualizable_entities:
-        class: Bigfoot\Bundle\ContextBundle\Form\ContextualizableEntitiesType
-        arguments: [ @service_container ]
+    # Context Service
+    bigfoot_context.service.context:
+        class: Bigfoot\Bundle\ContextBundle\Service\ContextService
+        arguments:
+            - @bigfoot_context.chain.loader
+            - %bigfoot_context.contexts%
+            - %bigfoot_context.entities%
+
+    # Context Manager
+    bigfoot_context.manager.context:
+        class: Bigfoot\Bundle\ContextBundle\Manager\ContextManager
+        arguments:
+            - @doctrine.orm.entity_manager
+
+    # Context Repository
+    bigfoot_context.repository.context:
+        class: Bigfoot\Bundle\ContextBundle\Entity\ContextRepository
+        arguments: ['BigfootContextBundle:Context']
+        factory_service: doctrine.orm.entity_manager
+        factory_method: getRepository
+        calls:
+            - [setSession, ['@session']]
+
+    # Context Voter
+    bigfoot_context.voter.context:
+        class: Bigfoot\Bundle\ContextBundle\Security\Core\Authorization\Voter\ContextVoter
+        arguments:
+            - @doctrine.orm.entity_manager
         tags:
-            - { name: form.type, alias: bigfoot_contextualizable_entities }
+            - { name: security.voter }
+
+    # Context Alias
     bigfoot_context:
-        class:        "Bigfoot\\Bundle\\ContextBundle\\Model\\Context"
-        arguments:    [ @service_container ]
-    bigfoot_language_loader:
-        class:        "Bigfoot\\Bundle\\ContextBundle\\ContextLoader\\LanguageLoader"
-        arguments:    [ @service_container ]
-    bigfoot.listener.bigfoot_core_kernel_listener:
-        class: Bigfoot\Bundle\ContextBundle\Listener\KernelListener
-        arguments: [ @bigfoot_context ]
+        alias: bigfoot_context.service.context
+
+    # Context Type
+    bigfoot_context.form.type.context:
+        class: Bigfoot\Bundle\ContextBundle\Form\Type\ContextType
+        arguments:
+            - @doctrine.orm.entity_manager
+            - @session
+            - @security.context
+            - @bigfoot_context
+            - @bigfoot_context.manager.context
         tags:
-            - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest, priority: -10 }
+            - { name: form.type, alias: bigfoot_context }
+
+    # Context Form Extension
+    bigfoot_context.form.extension.context:
+        class: Bigfoot\Bundle\ContextBundle\Form\Extension\ContextExtension
+        arguments:
+            - @bigfoot_context.repository.context
+        tags:
+            - { name: form.type_extension, alias: entity }
+
+    # Context Twig Extension
+    bigfoot_context.twig.extension.context:
+        class: Bigfoot\Bundle\ContextBundle\Twig\Extension\ContextExtension
+        arguments:
+            - @bigfoot_context
+        tags:
+            - { name: twig.extension }
 
     # Menu Subscriber
     bigfoot_context.subscriber.menu:
@@ -23,3 +69,32 @@ services:
             - @security.context
         tags:
             - { name: kernel.event_subscriber }
+
+    # Form Subscriber
+    bigfoot_context.subscriber.form:
+        class: Bigfoot\Bundle\ContextBundle\Subscriber\FormSubscriber
+        arguments:
+            - @form.factory
+            - @bigfoot_context
+        tags:
+            - { name: kernel.event_subscriber }
+
+    # Doctrine Subscriber
+    bigfoot_context.subscriber.doctrine:
+        class: Bigfoot\Bundle\ContextBundle\Subscriber\DoctrineSubscriber
+        arguments:
+            - @bigfoot_context
+        tags:
+            - { name: doctrine.event_subscriber, connection: default }
+
+    # Loader Chain
+    bigfoot_context.chain.loader:
+        class: Bigfoot\Bundle\ContextBundle\Loader\LoaderChain
+
+    # Abstract Loader
+    bigfoot_context.loader.abstract:
+        class: Bigfoot\Bundle\ContextBundle\Loader\AbstractLoader
+        abstract: true
+        calls:
+            - [setRequest, ['@?request=']]
+            - [setContexts, ['%bigfoot_context.contexts%']]
