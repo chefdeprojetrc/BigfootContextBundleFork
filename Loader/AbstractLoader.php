@@ -46,8 +46,6 @@ abstract class AbstractLoader implements LoaderInterface
      */
     protected function getValueForKey($key)
     {
-        $contextConfiguration = $this->contexts;
-
         if (array_key_exists($key, $this->contexts[$this->getContextName()]['values'])) {
             return $this->contexts[$this->getContextName()]['values'][$key];
         }

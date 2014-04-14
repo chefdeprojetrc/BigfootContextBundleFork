@@ -15,13 +15,22 @@ use Doctrine\ORM\Query\Expr;
  */
 class ContextRepository extends EntityRepository
 {
+    /** @var SessionInterface */
     public $session;
 
+    /**
+     * @param SessionInterface $session
+     */
     public function setSession(SessionInterface $session)
     {
         $this->session = $session;
     }
 
+    /**
+     * @param $class
+     * @param array $definedContext
+     * @return \Doctrine\ORM\QueryBuilder
+     */
     public function createContextQueryBuilder($class, $definedContext = array())
     {
         $chosenContext = $this->session->get('bigfoot/context/chosen_contexts');
@@ -54,13 +63,15 @@ class ContextRepository extends EntityRepository
                 $regex[] = new Expr\Comparison('REGEXP(c.contextValues, \'[a-z0-9:;\{}\"]*'.$context.'[a-z0-9:;\"]*\{\}\')', Expr\Comparison::EQ, 1);
                 $regex[] = $queryBuilder->expr()->isNull('c.contextValues');
 
-                $orX[]   = new Expr\OrX($regex);
+                $orX[]   = new Expr\Orx($regex);
             }
 
             $andX = new Expr\AndX($orX);
 
-            return $queryBuilder->where('('.$andX.')');
+            $queryBuilder = $queryBuilder->where('('.$andX.')');
         }
+
+        return $queryBuilder;
     }
 
     public function findOneByEntityIdEntityClass($entityId, $entityClass)

@@ -43,7 +43,7 @@ class ContextService
      * @return mixed
      * @throws \Bigfoot\Bundle\ContextBundle\Exception\NotImplementedException
      */
-    public function get($name, $value = null)
+    public function get($name, $returnConfiguration = false, $value = null)
     {
         $context = $this->getConfig($name);
 
@@ -72,12 +72,25 @@ class ContextService
                 throw new NotImplementedException('A ContextLoader service must implement the Bigfoot\Bundle\ContextBundle\Loader\LoaderInterface.');
             }
 
-            if ($fContext = $loader->getValue()) {
-                return $fContext['value'];
+            $fContext = $loader->getValue();
+
+            foreach ($context['values'] as $key => $contextValue) {
+                if ($contextValue['value'] == $fContext['value']) {
+                    $fContext        = $contextValue;
+                    $fContext['key'] = $key;
+                    break;
+                }
+            }
+
+            if ($loader->getValue()) {
+                return $returnConfiguration ? $fContext : $fContext['value'];
             }
         }
 
-        return $context['default_value'];
+        $contextValues = $context['values'][$context['default_value']];
+        $contextValues['key'] = $context['default_value'];
+
+        return $returnConfiguration ? $contextValues : $contextValues['value'];
     }
 
     /**

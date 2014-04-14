@@ -60,7 +60,7 @@ class ContextType extends AbstractType
                     $contextValues  = ($entityContexts) ? $entityContexts->getContextValues() : null;
 
                     foreach ($contexts as $key => $context) {
-                        if (isset($this->contexts[$context]) && (isset($allowedContexts) && count($allowedContexts[$context]))) {
+                        if ($this->securityContext->isGranted('ROLE_ADMIN') or (isset($this->contexts[$context]) && (isset($allowedContexts) && count($allowedContexts[$context])))) {
                             $form->add(
                                 $context,
                                 'choice',
@@ -88,7 +88,7 @@ class ContextType extends AbstractType
                     $dbContextValues = ($entityContexts) ? $entityContexts->getContextValues() : null;
 
                     foreach ($contexts as $key => $context) {
-                        if (isset($allowedContexts) && count($allowedContexts[$context])) {
+                        if ($this->securityContext->isGranted('ROLE_ADMIN') or (isset($allowedContexts) && count($allowedContexts[$context]))) {
                             $contextValues[$context] = $form->get($context)->getData();
 
                             if ((!$dbContextValues && $data->getId()) || ($dbContextValues && (array_diff($contextValues[$context], $dbContextValues[$context]) || array_diff($dbContextValues[$context], $contextValues[$context])))) {
@@ -112,9 +112,11 @@ class ContextType extends AbstractType
             $nContextValues[$contextValue['value']] = $contextValue['label'];
         }
 
-        foreach ($nContextValues as $key => $value) {
-            if (!in_array($key, $allowedContexts[$context]) && !$this->securityContext->isGranted('ROLE_ADMIN')) {
-                unset($nContextValues[$key]);
+        if ($allowedContexts) {
+            foreach ($nContextValues as $key => $value) {
+                if (!in_array($key, $allowedContexts[$context]) && !$this->securityContext->isGranted('ROLE_ADMIN')) {
+                    unset($nContextValues[$key]);
+                }
             }
         }
 

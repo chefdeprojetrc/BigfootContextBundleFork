@@ -17,7 +17,7 @@ use Bigfoot\Bundle\CoreBundle\Controller\BaseController;
  * Context controller.
  *
  * @Cache(maxage="0", smaxage="0", public="false")
- * @Route("/context")
+ * @Route("/admin/context")
  */
 class ContextController extends BaseController
 {
