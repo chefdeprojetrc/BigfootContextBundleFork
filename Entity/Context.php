@@ -5,12 +5,12 @@ namespace Bigfoot\Bundle\ContextBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * ContextualizedEntity
+ * Context
  *
- * @ORM\Table()
- * @ORM\Entity(repositoryClass="Bigfoot\Bundle\ContextBundle\Entity\ContextualizedEntityRepository")
+ * @ORM\Table(name="bigfoot_context")
+ * @ORM\Entity(repositoryClass="Bigfoot\Bundle\ContextBundle\Entity\ContextRepository")
  */
-class ContextualizedEntity
+class Context
 {
     /**
      * @var integer
@@ -19,34 +19,33 @@ class ContextualizedEntity
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      */
-    private $id;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="entity", type="string", length=255)
-     */
-    private $entity;
+    protected $id;
 
     /**
      * @var integer
      *
      * @ORM\Column(name="entity_id", type="integer")
      */
-    private $entityId;
+    protected $entityId;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="entity_class", type="string", length=255)
+     */
+    protected $entityClass;
 
     /**
      * @var array
      *
      * @ORM\Column(name="context_values", type="array")
      */
-    private $contextValues;
-
+    protected $contextValues;
 
     /**
      * Get id
      *
-     * @return integer 
+     * @return integer
      */
     public function getId()
     {
@@ -54,45 +53,22 @@ class ContextualizedEntity
     }
 
     /**
-     * Set entity
-     *
-     * @param string $entity
-     * @return ContextualizedEntity
-     */
-    public function setEntity($entity)
-    {
-        $this->entity = $entity;
-    
-        return $this;
-    }
-
-    /**
-     * Get entity
-     *
-     * @return string 
-     */
-    public function getEntity()
-    {
-        return $this->entity;
-    }
-
-    /**
      * Set entityId
      *
      * @param integer $entityId
-     * @return ContextualizedEntity
+     * @return Context
      */
     public function setEntityId($entityId)
     {
         $this->entityId = $entityId;
-    
+
         return $this;
     }
 
     /**
      * Get entityId
      *
-     * @return integer 
+     * @return integer
      */
     public function getEntityId()
     {
@@ -100,22 +76,45 @@ class ContextualizedEntity
     }
 
     /**
+     * Set entityClass
+     *
+     * @param string $entityClass
+     * @return Context
+     */
+    public function setEntityClass($entityClass)
+    {
+        $this->entityClass = $entityClass;
+
+        return $this;
+    }
+
+    /**
+     * Get entityClass
+     *
+     * @return string
+     */
+    public function getEntityClass()
+    {
+        return $this->entityClass;
+    }
+
+    /**
      * Set contextValues
      *
      * @param array $contextValues
-     * @return ContextualizedEntity
+     * @return Context
      */
     public function setContextValues($contextValues)
     {
         $this->contextValues = $contextValues;
-    
+
         return $this;
     }
 
     /**
      * Get contextValues
      *
-     * @return array 
+     * @return array
      */
     public function getContextValues()
     {

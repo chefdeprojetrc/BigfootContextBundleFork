@@ -4,9 +4,9 @@ namespace Bigfoot\Bundle\ContextBundle\Subscriber;
 
 use Symfony\Component\EventDispatcher\GenericEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\Security\Core\SecurityContextInterface;
 
 use Bigfoot\Bundle\CoreBundle\Event\MenuEvent;
-use Symfony\Component\Security\Core\SecurityContextInterface;
 
 /**
  * Menu Subscriber
@@ -65,8 +65,8 @@ class MenuSubscriber implements EventSubscriberInterface
             $structureMenu->addChild(
                 'context',
                 array(
-                    'label'  => 'Context',
-                    'route'  => 'admin_context',
+                    'label'          => 'Context',
+                    'url'            => '#',
                     'linkAttributes' => array(
                         'icon' => 'globe',
                     )
