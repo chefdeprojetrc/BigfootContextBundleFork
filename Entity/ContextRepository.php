@@ -89,7 +89,7 @@ class ContextRepository extends EntityRepository
 
             $andX = new Expr\AndX($orX);
 
-            $queryBuilder = $queryBuilder->where('('.$andX.')');
+            $queryBuilder->where('('.$andX.')');
         }
 
         return $queryBuilder;

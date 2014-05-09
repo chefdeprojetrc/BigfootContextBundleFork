@@ -45,13 +45,6 @@ class ContextExtension extends AbstractTypeExtension
         };
 
         $resolver->setOptional(array('contextualize'));
-
-        $resolver->setDefaults(
-            array(
-                'contextualize' => false,
-                'loader'        => $loader,
-            )
-        );
     }
 
     public function getExtendedType()
