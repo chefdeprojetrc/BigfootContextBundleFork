@@ -2,6 +2,7 @@
 
 namespace Bigfoot\Bundle\ContextBundle\Entity;
 
+use Bigfoot\Bundle\ContextBundle\Service\ContextService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Doctrine\ORM\EntityRepository;
@@ -18,6 +19,9 @@ class ContextRepository extends EntityRepository
     /** @var SessionInterface */
     public $session;
 
+    /** @var ContextService */
+    public $context;
+
     /**
      * @param SessionInterface $session
      */
@@ -27,12 +31,22 @@ class ContextRepository extends EntityRepository
     }
 
     /**
+     * @param ContextService $context
+     */
+    public function setContextService(ContextService $context)
+    {
+        $this->context = $context;
+    }
+
+    /**
      * @param $class
      * @param array $definedContext
      * @return \Doctrine\ORM\QueryBuilder
      */
     public function createContextQueryBuilder($class, $definedContext = array())
     {
+        $contextService = $this->context;
+
         $chosenContext = $this->session->get('bigfoot/context/chosen_contexts');
         $contextValues = $this->session->get('bigfoot/context/allowed_contexts');
 
@@ -46,7 +60,8 @@ class ContextRepository extends EntityRepository
         $regex        = array();
         $orX          = array();
 
-        if (count($contextValues)) {
+        $entityContexts = $contextService->getEntityContexts($class);
+        if (count($entityContexts)) {
             $queryBuilder = $queryBuilder
                 ->leftJoin('BigfootContextBundle:Context', 'c', 'WITH',
                     $queryBuilder->expr()->andX(
@@ -55,8 +70,14 @@ class ContextRepository extends EntityRepository
                     )
                 );
 
-            foreach ($contextValues as $context => $values) {
-                foreach ($values as $key => $value) {
+            foreach ($entityContexts as $context) {
+                if (isset($contextValues[$context])) {
+                    $values = $contextValues[$context];
+                } else {
+                    $values = array($contextService->get($context));
+                }
+
+                foreach ($values as $value) {
                     $regex[] = new Expr\Comparison('REGEXP(c.contextValues, \'[a-z0-9:;\{}\"]*'.$context.'[a-z0-9:;\{\"]*'.$value.'.*\}\')', Expr\Comparison::EQ, 1);
                 }
 

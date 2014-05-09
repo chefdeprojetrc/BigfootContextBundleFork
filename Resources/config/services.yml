@@ -21,6 +21,7 @@ services:
         factory_method: getRepository
         calls:
             - [setSession, ['@session']]
+            - [setContextService, ['@bigfoot_context']]
 
     # Context Voter
     bigfoot_context.voter.context:
