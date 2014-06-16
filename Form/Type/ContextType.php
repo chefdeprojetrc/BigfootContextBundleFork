@@ -134,6 +134,7 @@ class ContextType extends AbstractType
                 'auto_initialize' => false,
                 'contexts'        => null,
                 'entityClass'     => null,
+                'label'           => false,
             )
         );
     }
