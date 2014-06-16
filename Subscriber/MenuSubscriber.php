@@ -43,27 +43,32 @@ class MenuSubscriber implements EventSubscriberInterface
      */
     public function onGenerateMain(GenericEvent $event)
     {
-        $menu          = $event->getSubject();
-        $root          = $menu->getRoot();
-        $structureMenu = $root->getChild('structure');
+        $builder = $event->getSubject();
 
-        if (!$structureMenu) {
-            $structureMenu = $root->addChild(
-                'structure',
-                array(
-                    'label'          => 'Structure',
-                    'url'            => '#',
-                    'linkAttributes' => array(
-                        'class' => 'dropdown-toggle',
-                        'icon'  => 'building',
+        if (!$builder->childExists('structure')) {
+            $builder
+                ->addChild(
+                    'structure',
+                    array(
+                        'label'          => 'Structure',
+                        'url'            => '#',
+                        'linkAttributes' => array(
+                            'class' => 'dropdown-toggle',
+                            'icon'  => 'building',
+                        )
+                    ),
+                    array(
+                        'children-attributes' => array(
+                            'class' => 'submenu'
+                        )
                     )
-                )
-            );
+                );
         }
 
-        if ($this->security->isGranted('ROLE_ADMIN')) {
-            $structureMenu->addChild(
-                'context',
+        $builder
+            ->addChildFor(
+                'structure',
+                'structure_context',
                 array(
                     'label'          => 'Context',
                     'url'            => '#',
@@ -72,6 +77,5 @@ class MenuSubscriber implements EventSubscriberInterface
                     )
                 )
             );
-        }
     }
 }
