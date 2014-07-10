@@ -52,6 +52,9 @@ class MenuSubscriber implements EventSubscriberInterface
                     array(
                         'label'          => 'Structure',
                         'url'            => '#',
+                        'attributes' => array(
+                            'class' => 'parent',
+                        ),
                         'linkAttributes' => array(
                             'class' => 'dropdown-toggle',
                             'icon'  => 'building',
