@@ -47,13 +47,13 @@ class ContextRepository extends EntityRepository
     {
         $contextService = $this->context;
 
-        $chosenContext = $this->session->get('bigfoot/context/chosen_contexts');
-        $contextValues = $this->session->get('bigfoot/context/allowed_contexts');
-
-        if ($chosenContext) {
+        $contextValues = array();
+        if ($this->session && ($chosenContext = $this->session->get('bigfoot/context/chosen_contexts'))) {
             $contextValues = $chosenContext;
         } elseif (count($definedContext)) {
             $contextValues = $definedContext;
+        } elseif ($this->session) {
+            $contextValues = $this->session->get('bigfoot/context/allowed_contexts');
         }
 
         $queryBuilder = $this->getEntityManager()->getRepository($class)->createQueryBuilder('e');

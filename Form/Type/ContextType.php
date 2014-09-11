@@ -68,7 +68,8 @@ class ContextType extends AbstractType
                                     'choices'  => $this->handleContextValues($allowedContexts, $context, $this->contexts[$context]['values']),
                                     'data'     => ($contextValues && isset($contextValues[$context])) ? $contextValues[$context] : null,
                                     'multiple' => true,
-                                    'mapped'   => false
+                                    'mapped'   => false,
+                                    'required' => false,
                                 )
                             );
                         }
