@@ -57,7 +57,7 @@ class FormSubscriber implements EventSubscriberInterface
                     $form->getData(),
                     array(
                         'entityClass' => $entityClass,
-                        'contexts'    => $contexts
+                        'contexts'    => $contexts,
                     )
                 );
 

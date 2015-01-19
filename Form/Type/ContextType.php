@@ -60,16 +60,25 @@ class ContextType extends AbstractType
                     $contextValues  = ($entityContexts) ? $entityContexts->getContextValues() : null;
 
                     foreach ($contexts as $key => $context) {
-                        if ($this->securityContext->isGranted('ROLE_ADMIN') or (isset($this->contexts[$context]) && (isset($allowedContexts) && count($allowedContexts[$context])))) {
+
+                        $constraints = $context->required ? array(new \Symfony\Component\Validator\Constraints\NotBlank()) : array();
+
+                        $data = null;
+                        if ($contextValues && isset($contextValues[$context->value])) {
+                            $data = $context->multiple ? $contextValues[$context->value] : $contextValues[$context->value][0];
+                        }
+
+                        if ($this->securityContext->isGranted('ROLE_ADMIN') or (isset($this->contexts[$context]) && (isset($allowedContexts) && count($allowedContexts[$context->value])))) {
                             $form->add(
-                                $context,
+                                $context->value,
                                 'choice',
                                 array(
-                                    'choices'  => $this->handleContextValues($allowedContexts, $context, $this->contexts[$context]['values']),
-                                    'data'     => ($contextValues && isset($contextValues[$context])) ? $contextValues[$context] : null,
-                                    'multiple' => true,
-                                    'mapped'   => false,
-                                    'required' => false,
+                                    'choices'     => $this->handleContextValues($allowedContexts, $context->value, $this->contexts[$context->value]['values']),
+                                    'data'        => $data,
+                                    'multiple'    => $context->multiple,
+                                    'mapped'      => false,
+                                    'required'    => false,
+                                    'constraints' => $constraints,
                                 )
                             );
                         }
@@ -89,10 +98,16 @@ class ContextType extends AbstractType
                     $dbContextValues = ($entityContexts) ? $entityContexts->getContextValues() : null;
 
                     foreach ($contexts as $key => $context) {
-                        if ($this->securityContext->isGranted('ROLE_ADMIN') or (isset($allowedContexts) && count($allowedContexts[$context]))) {
-                            $contextValues[$context] = $form->get($context)->getData();
+                        if ($this->securityContext->isGranted('ROLE_ADMIN') or (isset($allowedContexts) && count($allowedContexts[$context->value]))) {
+                            $contextValues[$context->value] = $form->get($context->value)->getData();
 
-                            if ((!$dbContextValues && $data->getId()) || ($dbContextValues && (array_diff($contextValues[$context], $dbContextValues[$context]) || array_diff($dbContextValues[$context], $contextValues[$context])))) {
+                            foreach ($contextValues as &$contextValue) {
+                                if (!is_array($contextValue)) {
+                                    $contextValue = array($contextValue);
+                                }
+                            }
+
+                            if ((!$dbContextValues && $data->getId()) || ($dbContextValues && (array_diff($contextValues[$context->value], $dbContextValues[$context->value]) || array_diff($dbContextValues[$context->value], $contextValues[$context->value])))) {
                                 $contextManager->updateContext($data);
                             }
                         }
