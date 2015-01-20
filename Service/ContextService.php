@@ -147,6 +147,9 @@ class ContextService
      */
     private function getConfig($name)
     {
+        if (is_object($name)) {
+            $name = $name->value;
+        }
         if (!array_key_exists($name, $this->contexts)) {
             throw new NotFoundException(sprintf('The context %s is undefined. Please add it to the bigfoot_context.contexts configuration in your config.yml file.', $name));
         }
@@ -181,11 +184,9 @@ class ContextService
 
     public function getEntityContexts($entity)
     {
-        $reader      = new AnnotationReader();
         $entityClass = (is_object($entity)) ? get_class($entity) : $entity;
         $reflClass   = new \ReflectionClass($entityClass);
-        $contexts    = $reader->getClassAnnotation($reflClass, 'Bigfoot\Bundle\CoreBundle\Annotation\Bigfoot\Context');
-        $contexts    = (is_object($contexts)) ? current($contexts) : array();
+        $contexts    = $this->getContextAnnotations($reflClass);
 
         if (!$contexts) {
             $entities = $this->getEntities();
@@ -219,6 +220,21 @@ class ContextService
             'entityClass'    => $entityClass,
             'context_values' => $values,
         );
+    }
+
+    /**
+     * Returns all BigfootContext annotations
+     *
+     * @param \ReflexionClass $reflClass
+     * @return array
+     */
+    public function getContextAnnotations($reflClass)
+    {
+        $reader = new AnnotationReader();
+        $annotations = $reader->getClassAnnotations($reflClass);
+        return array_values(array_filter($annotations, function($annotation) {
+            return get_class($annotation) == 'Bigfoot\Bundle\ContextBundle\Annotation\Bigfoot\Context';
+        }));
     }
 
     public function getQueued()
