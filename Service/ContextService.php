@@ -147,6 +147,9 @@ class ContextService
      */
     private function getConfig($name)
     {
+        if (is_object($name)) {
+            $name = $name->value;
+        }
         if (!array_key_exists($name, $this->contexts)) {
             throw new NotFoundException(sprintf('The context %s is undefined. Please add it to the bigfoot_context.contexts configuration in your config.yml file.', $name));
         }
