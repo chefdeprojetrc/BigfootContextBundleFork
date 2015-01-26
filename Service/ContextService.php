@@ -2,10 +2,8 @@
 
 namespace Bigfoot\Bundle\ContextBundle\Service;
 
-use Symfony\Component\Config\Definition\Exception\Exception;
 use Doctrine\Common\Annotations\AnnotationReader;
 
-use Bigfoot\Bundle\ContextBundle\Loader\AbstractLoader;
 use Bigfoot\Bundle\ContextBundle\Loader\LoaderInterface;
 use Bigfoot\Bundle\ContextBundle\Loader\LoaderChain;
 use Bigfoot\Bundle\ContextBundle\Exception\NotFoundException;
