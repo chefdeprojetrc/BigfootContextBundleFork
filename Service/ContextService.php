@@ -2,10 +2,8 @@
 
 namespace Bigfoot\Bundle\ContextBundle\Service;
 
-use Symfony\Component\Config\Definition\Exception\Exception;
 use Doctrine\Common\Annotations\AnnotationReader;
 
-use Bigfoot\Bundle\ContextBundle\Loader\AbstractLoader;
 use Bigfoot\Bundle\ContextBundle\Loader\LoaderInterface;
 use Bigfoot\Bundle\ContextBundle\Loader\LoaderChain;
 use Bigfoot\Bundle\ContextBundle\Exception\NotFoundException;
@@ -147,9 +145,6 @@ class ContextService
      */
     private function getConfig($name)
     {
-        if (is_object($name)) {
-            $name = $name->value;
-        }
         if (!array_key_exists($name, $this->contexts)) {
             throw new NotFoundException(sprintf('The context %s is undefined. Please add it to the bigfoot_context.contexts configuration in your config.yml file.', $name));
         }

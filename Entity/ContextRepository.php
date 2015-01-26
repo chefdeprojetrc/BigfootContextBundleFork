@@ -2,11 +2,14 @@
 
 namespace Bigfoot\Bundle\ContextBundle\Entity;
 
+use Bigfoot\Bundle\ContextBundle\Exception\InvalidConfigurationException;
 use Bigfoot\Bundle\ContextBundle\Service\ContextService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr;
+use Symfony\Component\PropertyAccess\Exception\NoSuchIndexException;
+use Symfony\Component\PropertyAccess\PropertyAccessor;
 
 /**
  * ContextRepository
@@ -71,17 +74,36 @@ class ContextRepository extends EntityRepository
                 );
 
             foreach ($entityContexts as $context) {
-                if (isset($contextValues[$context])) {
-                    $values = $contextValues[$context];
+                $contextValue = $context;
+                $propertyAccessor = new PropertyAccessor();
+
+                if (is_object($context)) {
+                    try {
+                        $contextValue = $propertyAccessor->getValue($context, 'value');
+                    } catch (NoSuchIndexException $e) {
+                        throw new InvalidConfigurationException(sprintf('Contextualized entities configuration should define a value. Check your BigfootContext annotation for class %s.', $class));
+                    }
+                }
+
+                if (is_array($context)) {
+                    try {
+                        $contextValue = $propertyAccessor->getValue($context, '[value]');
+                    } catch (NoSuchIndexException $e) {
+                        throw new InvalidConfigurationException(sprintf('Contextualized entities configuration should define a value. Check your yml configuration for class %s.', $class));
+                    }
+                }
+
+                if (isset($contextValues[$contextValue])) {
+                    $values = $contextValues[$contextValue];
                 } else {
-                    $values = array($contextService->get($context));
+                    $values = array($contextService->get($contextValue));
                 }
 
                 foreach ($values as $value) {
-                    $regex[] = new Expr\Comparison('REGEXP(c.contextValues, \'[a-z0-9:;\{}\"]*'.$context->value.'[a-z0-9:;\{\"]*'.$value.'.*\}\')', Expr\Comparison::EQ, 1);
+                    $regex[] = new Expr\Comparison('REGEXP(c.contextValues, \'[a-z0-9:;\{}\"]*'.$contextValue.'[a-z0-9:;\{\"]*'.$value.'.*\}\')', Expr\Comparison::EQ, 1);
                 }
 
-                $regex[] = new Expr\Comparison('REGEXP(c.contextValues, \'[a-z0-9:;\{}\"]*'.$context->value.'[a-z0-9:;\"]*\{\}\')', Expr\Comparison::EQ, 1);
+                $regex[] = new Expr\Comparison('REGEXP(c.contextValues, \'[a-z0-9:;\{}\"]*'.$contextValue.'[a-z0-9:;\"]*\{\}\')', Expr\Comparison::EQ, 1);
                 $regex[] = $queryBuilder->expr()->isNull('c.contextValues');
 
                 $orX[]   = new Expr\Orx($regex);
