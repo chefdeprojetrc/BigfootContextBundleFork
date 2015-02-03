@@ -196,7 +196,24 @@ class ContextService
             }
         }
 
-        return $contexts;
+        return $this->objectToArray($contexts);
+    }
+
+    /**
+     * @param $object
+     * @return mixed
+     */
+    function objectToArray($object)
+    {
+        $array = array();
+
+        if (is_array($object) || is_object($object)) {
+            foreach ($object as $key => $value) {
+                $array[$key] = (is_array($value) || is_object($value)) ? $this->objectToArray($value): $value;
+            }
+        }
+
+        return $array;
     }
 
     public function resolveEntityClass($entityClass)
