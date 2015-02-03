@@ -2,7 +2,11 @@
 
 namespace Bigfoot\Bundle\ContextBundle\Form\Type;
 
+use Bigfoot\Bundle\ContextBundle\Entity\ContextRepository;
+use Bigfoot\Bundle\ContextBundle\Exception\InvalidConfigurationException;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\PropertyAccess\Exception\NoSuchIndexException;
+use Symfony\Component\PropertyAccess\PropertyAccessor;
 use Symfony\Component\Security\Core\SecurityContextInterface;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormEvent;
@@ -25,7 +29,11 @@ class ContextType extends AbstractType
     private $contexts;
 
     /**
-     * @param Array $contexts
+     * @param EntityManager $entityManager
+     * @param SessionInterface $session
+     * @param SecurityContextInterface $securityContext
+     * @param ContextService $contextService
+     * @param ContextManager $contextManager
      */
     public function __construct(EntityManager $entityManager, SessionInterface $session, SecurityContextInterface $securityContext, ContextService $contextService, ContextManager $contextManager)
     {
@@ -40,6 +48,7 @@ class ContextType extends AbstractType
     /**
      * @param FormBuilderInterface $builder
      * @param array $options
+     * @throws \Bigfoot\Bundle\ContextBundle\Exception\InvalidConfigurationException
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
@@ -56,26 +65,35 @@ class ContextType extends AbstractType
                 $data = $event->getData();
 
                 if ($data && $contexts) {
-                    $entityContexts = $entityManager->getRepository('BigfootContextBundle:Context')->findOneByEntityIdEntityClass($data->getId(), $entityClass);
+                    /** @var ContextRepository $contextRepo */
+                    $contextRepo    = $entityManager->getRepository('BigfootContextBundle:Context');
+                    $entityContexts = $contextRepo->findOneByEntityIdEntityClass($data->getId(), $entityClass);
                     $contextValues  = ($entityContexts) ? $entityContexts->getContextValues() : null;
 
                     foreach ($contexts as $key => $context) {
+                        $propertyAccessor = new PropertyAccessor();
 
-                        $constraints = $context->required ? array(new \Symfony\Component\Validator\Constraints\NotBlank()) : array();
-
-                        $data = null;
-                        if ($contextValues && isset($contextValues[$context->value])) {
-                            $data = $context->multiple ? $contextValues[$context->value] : $contextValues[$context->value][0];
+                        try {
+                            $contextValue = $propertyAccessor->getValue($context, '[value]');
+                        } catch (NoSuchIndexException $e) {
+                            throw new InvalidConfigurationException(sprintf('Contextualized entities configuration should define a value. Check your yml or annotation configuration for class %s.', $entityClass), '02001', $e);
                         }
 
-                        if ($this->securityContext->isGranted('ROLE_ADMIN') or (isset($this->contexts[$context]) && (isset($allowedContexts) && count($allowedContexts[$context->value])))) {
+                        $constraints = isset($context['required']) && $context['required'] ? array(new \Symfony\Component\Validator\Constraints\NotBlank()) : array();
+
+                        $data = null;
+                        if ($contextValues && isset($contextValues[$contextValue])) {
+                            $data = $context['multiple'] ? $contextValues[$contextValue] : $contextValues[$contextValue][0];
+                        }
+
+                        if ($this->securityContext->isGranted('ROLE_ADMIN') or (isset($this->contexts[$context]) && (isset($allowedContexts) && count($allowedContexts[$contextValue])))) {
                             $form->add(
-                                $context->value,
+                                $contextValue,
                                 'choice',
                                 array(
-                                    'choices'     => $this->handleContextValues($allowedContexts, $context->value, $this->contexts[$context->value]['values']),
+                                    'choices'     => $this->handleContextValues($allowedContexts, $contextValue, $this->contexts[$contextValue]['values']),
                                     'data'        => $data,
-                                    'multiple'    => $context->multiple,
+                                    'multiple'    => isset($context['multiple']) && $context['multiple'],
                                     'mapped'      => false,
                                     'required'    => false,
                                     'constraints' => $constraints,
@@ -94,7 +112,9 @@ class ContextType extends AbstractType
 
                 if ($data) {
                     $contextValues   = array();
-                    $entityContexts  = $entityManager->getRepository('BigfootContextBundle:Context')->findOneByEntityIdEntityClass($data->getId(), $entityClass);
+                    /** @var ContextRepository $contextRepo */
+                    $contextRepo     = $entityManager->getRepository('BigfootContextBundle:Context');
+                    $entityContexts  = $contextRepo->findOneByEntityIdEntityClass($data->getId(), $entityClass);
                     $dbContextValues = ($entityContexts) ? $entityContexts->getContextValues() : null;
 
                     foreach ($contexts as $key => $context) {
@@ -120,6 +140,12 @@ class ContextType extends AbstractType
             });
     }
 
+    /**
+     * @param $allowedContexts
+     * @param $context
+     * @param $contextValues
+     * @return array
+     */
     public function handleContextValues($allowedContexts, $context, $contextValues)
     {
         $nContextValues = array();

@@ -74,23 +74,12 @@ class ContextRepository extends EntityRepository
                 );
 
             foreach ($entityContexts as $context) {
-                $contextValue = $context;
                 $propertyAccessor = new PropertyAccessor();
 
-                if (is_object($context)) {
-                    try {
-                        $contextValue = $propertyAccessor->getValue($context, 'value');
-                    } catch (NoSuchIndexException $e) {
-                        throw new InvalidConfigurationException(sprintf('Contextualized entities configuration should define a value. Check your BigfootContext annotation for class %s.', $class));
-                    }
-                }
-
-                if (is_array($context)) {
-                    try {
-                        $contextValue = $propertyAccessor->getValue($context, '[value]');
-                    } catch (NoSuchIndexException $e) {
-                        throw new InvalidConfigurationException(sprintf('Contextualized entities configuration should define a value. Check your yml configuration for class %s.', $class));
-                    }
+                try {
+                    $contextValue = $propertyAccessor->getValue($context, '[value]');
+                } catch (NoSuchIndexException $e) {
+                    throw new InvalidConfigurationException(sprintf('Contextualized entities configuration should define a value. Check your yml or annotation configuration for class %s.', $class), '02001', $e);
                 }
 
                 if (isset($contextValues[$contextValue])) {

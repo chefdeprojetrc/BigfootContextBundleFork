@@ -2,6 +2,7 @@
 
 namespace Bigfoot\Bundle\ContextBundle\Subscriber;
 
+use Bigfoot\Bundle\ContextBundle\Entity\ContextRepository;
 use Doctrine\ORM\Events;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
@@ -44,15 +45,19 @@ class DoctrineSubscriber implements EventSubscriber
         );
     }
 
+    /**
+     * @param LifecycleEventArgs $args
+     */
     public function postUpdate(LifecycleEventArgs $args)
     {
         $entity          = $args->getEntity();
         $entityClass     = $this->contextService->resolveEntityClass(get_class($entity));
         $contexts        = $this->contextService->getEntityContexts($entity);
-        $contextEntities = $this->contextService->getEntities();
 
         if ($contexts) {
-            $context       = $args->getEntityManager()->getRepository('BigfootContextBundle:Context')->findOneByEntityIdEntityClass($entity->getId(), $entityClass);
+            /** @var ContextRepository $contextRepo */
+            $contextRepo   = $args->getEntityManager()->getRepository('BigfootContextBundle:Context');
+            $context       = $contextRepo->findOneByEntityIdEntityClass($entity->getId(), $entityClass);
             $queued        = $this->contextService->getQueued();
             $contextValues = $queued[$entityClass]['context_values'];
 
@@ -69,6 +74,9 @@ class DoctrineSubscriber implements EventSubscriber
         }
     }
 
+    /**
+     * @param PostFlushEventArgs $args
+     */
     public function postFlush(PostFlushEventArgs $args)
     {
         $entityManager = $args->getEntityManager();
@@ -85,7 +93,9 @@ class DoctrineSubscriber implements EventSubscriber
                     if (count($queued)) {
                         if (isset($queued[$entityClass])) {
                             $currentEntity = $queued[$entityClass];
-                            $context       = $args->getEntityManager()->getRepository('BigfootContextBundle:Context')->findOneByEntityIdEntityClass($entityId, $entityClass);
+                            $contextRepo   = $args->getEntityManager()->getRepository('BigfootContextBundle:Context');
+                            /** @var ContextRepository $contextRepo */
+                            $context       = $contextRepo->findOneByEntityIdEntityClass($entityId, $entityClass);
 
                             if (!$context) {
                                 $context = $this->createContext($entityId, $entityClass, $currentEntity['context_values']);
@@ -101,6 +111,12 @@ class DoctrineSubscriber implements EventSubscriber
         }
     }
 
+    /**
+     * @param $entityId
+     * @param $entityClass
+     * @param $contextValues
+     * @return Context
+     */
     public function createContext($entityId, $entityClass, $contextValues)
     {
         $context = new Context();
@@ -108,6 +124,7 @@ class DoctrineSubscriber implements EventSubscriber
         return $context
             ->setEntityId($entityId)
             ->setEntityClass($entityClass)
-            ->setContextValues($contextValues);
+            ->setContextValues($contextValues)
+        ;
     }
 }
