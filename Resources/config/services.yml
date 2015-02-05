@@ -12,6 +12,7 @@ services:
         class: Bigfoot\Bundle\ContextBundle\Manager\ContextManager
         arguments:
             - @doctrine.orm.entity_manager
+            - %bigfoot_context.entities%
 
     # Context Repository
     bigfoot_context.repository.context:
