@@ -31,22 +31,27 @@ class ContextController extends BaseController
         $values         = explode(',', $values);
         $chosenContexts = array($context => $values);
         $user           = $this->getUser();
-        $context        = $this->getEntityManager()->getRepository('BigfootContextBundle:Context')->findOneByEntityIdEntityClass($user->getId(), get_class($user));
 
-        if ($context) {
-            $allowedContexts       = $context->getContextValues();
-            $contextsIntersect     = array_udiff($chosenContexts, $allowedContexts, array($this, 'intersectContexts'));
-            $sessionChosenContexts = $this->getSession()->get('bigfoot/context/chosen_contexts');
+        if ($this->getContextManager()->isEntityContextualizable(get_class($user), $context)) {
+            $context = $this->getEntityManager()->getRepository('BigfootContextBundle:Context')->findOneByEntityIdEntityClass($user->getId(), get_class($user));
 
-            if ($sessionChosenContexts) {
-                $contextsDiff = array_udiff($contextsIntersect, $sessionChosenContexts, array($this, 'diffContexts'));
+            if ($context) {
+                $allowedContexts       = $context->getContextValues();
+                $contextsIntersect     = array_udiff($chosenContexts, $allowedContexts, array($this, 'intersectContexts'));
+                $sessionChosenContexts = $this->getSession()->get('bigfoot/context/chosen_contexts');
+
+                if ($sessionChosenContexts) {
+                    $contextsDiff = array_udiff($contextsIntersect, $sessionChosenContexts, array($this, 'diffContexts'));
+                }
+
+                if (isset($contextsDiff) && !$contextsDiff) {
+                    $this->getSession()->set('bigfoot/context/chosen_contexts', null);
+                } else {
+                    $this->getSession()->set('bigfoot/context/chosen_contexts', $contextsIntersect);
+                }
             }
-
-            if (isset($contextsDiff) && !$contextsDiff) {
-                $this->getSession()->set('bigfoot/context/chosen_contexts', null);
-            } else {
-                $this->getSession()->set('bigfoot/context/chosen_contexts', $contextsIntersect);
-            }
+        } else {
+           $this->getSession()->set('bigfoot/context/chosen_contexts', $chosenContexts);
         }
 
         return $this->redirect($request->headers->get('referer'));
