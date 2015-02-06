@@ -118,8 +118,8 @@ class ContextType extends AbstractType
                     $dbContextValues = ($entityContexts) ? $entityContexts->getContextValues() : null;
 
                     foreach ($contexts as $key => $context) {
-                        if ($this->securityContext->isGranted('ROLE_ADMIN') or (isset($allowedContexts) && count($allowedContexts[$context->value]))) {
-                            $contextValues[$context->value] = $form->get($context->value)->getData();
+                        if ($this->securityContext->isGranted('ROLE_ADMIN') or (isset($allowedContexts) && count($allowedContexts[$context['value']]))) {
+                            $contextValues[$context['value']] = $form->get($context['value'])->getData();
 
                             foreach ($contextValues as &$contextValue) {
                                 if (!is_array($contextValue)) {
@@ -127,7 +127,7 @@ class ContextType extends AbstractType
                                 }
                             }
 
-                            if ((!$dbContextValues && $data->getId()) || ($dbContextValues && (array_diff($contextValues[$context->value], $dbContextValues[$context->value]) || array_diff($dbContextValues[$context->value], $contextValues[$context->value])))) {
+                            if ((!$dbContextValues && $data->getId()) || ($dbContextValues && (array_diff($contextValues[$context['value']], $dbContextValues[$context['value']]) || array_diff($dbContextValues[$context['value']], $contextValues[$context['value']])))) {
                                 $contextManager->updateContext($data);
                             }
                         }
