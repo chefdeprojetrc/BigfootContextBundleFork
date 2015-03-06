@@ -49,9 +49,11 @@ class ContextController extends BaseController
                 } else {
                     $this->getSession()->set('bigfoot/context/chosen_contexts', $contextsIntersect);
                 }
+            } else {
+                $this->getSession()->set('bigfoot/context/chosen_contexts', $chosenContexts);
             }
         } else {
-           $this->getSession()->set('bigfoot/context/chosen_contexts', $chosenContexts);
+            $this->getSession()->set('bigfoot/context/chosen_contexts', $chosenContexts);
         }
 
         return $this->redirect($request->headers->get('referer'));
