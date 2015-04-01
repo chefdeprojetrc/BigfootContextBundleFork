@@ -1,3 +1,5 @@
+parameters:
+    bigfoot_context.language_back.loader.class: 'Bigfoot\Bundle\ContextBundle\Loader\LanguageBackLoader'
 services:
     # Context Service
     bigfoot_context.service.context:
@@ -100,3 +102,10 @@ services:
         calls:
             - [setRequest, ['@?request=']]
             - [setContexts, ['%bigfoot_context.contexts%']]
+
+    # BackOffice Language Loader
+    bigfoot_context.language_back.loader:
+        class: %bigfoot_context.language_back.loader.class%
+        parent: bigfoot_context.loader.abstract
+        tags:
+            - { name: bigfoot_context.loader }

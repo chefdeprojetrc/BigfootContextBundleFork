@@ -16,25 +16,37 @@ abstract class AbstractLoader implements LoaderInterface
     protected $request;
 
     /**
-     * @var Array
+     * @var array
      */
     protected $contexts;
 
+    /**
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     */
     public function setRequest(Request $request = null)
     {
         $this->request = $request;
     }
 
+    /**
+     * @return \Symfony\Component\HttpFoundation\Request
+     */
     public function getRequest()
     {
         return $this->request;
     }
 
+    /**
+     * @param $contexts
+     */
     public function setContexts($contexts)
     {
         $this->contexts = $contexts;
     }
 
+    /**
+     * @return array
+     */
     public function getContexts()
     {
         return $this->contexts;
@@ -49,6 +61,8 @@ abstract class AbstractLoader implements LoaderInterface
         if (array_key_exists($key, $this->contexts[$this->getContextName()]['values'])) {
             return $this->contexts[$this->getContextName()]['values'][$key];
         }
+
+        return false;
     }
 
     /**

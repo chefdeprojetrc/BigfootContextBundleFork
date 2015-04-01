@@ -11,22 +11,35 @@ use Bigfoot\Bundle\ContextBundle\Exception\NotImplementedException;
 
 /**
  * Class Context
+ *
  * @package Bigfoot\Bundle\ContextBundle\Service
  */
 class ContextService
 {
+    /** @var \Bigfoot\Bundle\ContextBundle\Loader\LoaderChain */
     private $loaderChain;
-    private $loaders;
-    private $contexts;
-    private $entities;
-    private $queued;
+
+    /** @var array */
+    private $loaders = array();
+
+    /** @var array */
+    private $contexts = array();
+
+    /** @var array */
+    private $entities = array();
+
+    /** @var array */
+    private $queued = array();
+
+    /** @var array  */
+    private $computedContexts = array();
 
     /**
      * Construct ContextService
      *
      * @param LoaderChain $loaderChain
-     * @param Array $contexts
-     * @param Array $entities
+     * @param array       $contexts
+     * @param array       $entities
      */
     public function __construct(LoaderChain $loaderChain, $contexts, $entities)
     {
@@ -37,9 +50,14 @@ class ContextService
     }
 
     /**
-     * @param $name
-     * @return mixed
+     * @param      $name
+     * @param bool $returnConfiguration
+     * @param null $value
+     *
+     * @return mixed|null
+     * @throws \Bigfoot\Bundle\ContextBundle\Exception\NotFoundException
      * @throws \Bigfoot\Bundle\ContextBundle\Exception\NotImplementedException
+     * @throws \Exception
      */
     public function get($name, $returnConfiguration = false, $value = null)
     {
@@ -57,7 +75,14 @@ class ContextService
             }
 
             if (!$contextConfiguration) {
-                throw new \Exception(sprintf('Context value "%s" for context "%s" was not found. Allowed context values are (%s)', $value, $name, implode(', ', array_keys($context['values']))));
+                throw new \Exception(
+                    sprintf(
+                        'Context value "%s" for context "%s" was not found. Allowed context values are (%s)',
+                        $value,
+                        $name,
+                        implode(', ', array_keys($context['values']))
+                    )
+                );
             }
 
             return $contextConfiguration;
@@ -67,7 +92,9 @@ class ContextService
             $loader = $this->loaders[$loader];
 
             if (!$loader instanceof LoaderInterface) {
-                throw new NotImplementedException('A ContextLoader service must implement the Bigfoot\Bundle\ContextBundle\Loader\LoaderInterface.');
+                throw new NotImplementedException(
+                    'A ContextLoader service must implement the Bigfoot\Bundle\ContextBundle\Loader\LoaderInterface.'
+                );
             }
 
             $fContext = $loader->getValue();
@@ -85,7 +112,7 @@ class ContextService
             }
         }
 
-        $contextValues = $context['values'][$context['default_value']];
+        $contextValues        = $context['values'][$context['default_value']];
         $contextValues['key'] = $context['default_value'];
 
         return $returnConfiguration ? $contextValues : $contextValues['value'];
@@ -94,6 +121,12 @@ class ContextService
     /**
      * Alias of {@link get()}.
      *
+     * @param      $name
+     * @param null $value
+     *
+     * @return mixed|null
+     * @throws \Bigfoot\Bundle\ContextBundle\Exception\NotImplementedException
+     * @throws \Exception
      * @deprecated Deprecated since version 1.x, to be removed in 2.x Use {@link get()} instead.
      */
     public function getContext($name, $value = null)
@@ -103,11 +136,12 @@ class ContextService
             E_USER_DEPRECATED
         );
 
-        return $this->get($name, $value = null);
+        return $this->get($name, $value);
     }
 
     /**
      * @param $name
+     *
      * @return array
      */
     public function getValues($name)
@@ -124,8 +158,28 @@ class ContextService
     }
 
     /**
+     * @return string
+     * @throws \Bigfoot\Bundle\ContextBundle\Exception\NotFoundException
+     */
+    public function getDefaultFrontLocale()
+    {
+        $config = $this->get('language_back', true);
+
+        if (isset($config['parameters']['default_front_locale'])) {
+            return $config['parameters']['default_front_locale'];
+        }
+
+        $config = $this->getConfig('language');
+
+        return $config['default_value'];
+    }
+
+    /**
      * Alias of {@link getValues()}.
      *
+     * @param $name
+     *
+     * @return array
      * @deprecated Deprecated since version 1.x, to be removed in 2.x Use {@link getValues()} instead.
      */
     public function getContextValues($name)
@@ -140,43 +194,45 @@ class ContextService
 
     /**
      * @param $name
+     *
      * @return mixed
      * @throws \Bigfoot\Bundle\ContextBundle\Exception\NotFoundException
      */
     private function getConfig($name)
     {
         if (!array_key_exists($name, $this->contexts)) {
-            throw new NotFoundException(sprintf('The context %s is undefined. Please add it to the bigfoot_context.contexts configuration in your config.yml file.', $name));
+            throw new NotFoundException(
+                sprintf(
+                    'The context %s is undefined. Please add it to the bigfoot_context.contexts configuration in your config.yml file.',
+                    $name
+                )
+            );
         }
 
         return $this->contexts[$name];
     }
 
     /**
-     * Alias of {@link getConfig()}.
-     *
-     * @deprecated Deprecated since version 1.x, to be removed in 2.x Use {@link getConfig()} instead.
+     * @return array
      */
-    private function getContextConfiguration($name)
-    {
-        trigger_error(
-            'getContextConfiguration() is deprecated since version 1.x and will be removed in 2.x Use getConfig() instead.',
-            E_USER_DEPRECATED
-        );
-
-        return $this->getConfig($name);
-    }
-
     public function getEntities()
     {
         return $this->entities;
     }
 
+    /**
+     * @return array
+     */
     public function getContexts()
     {
         return $this->contexts;
     }
 
+    /**
+     * @param $entity
+     *
+     * @return mixed
+     */
     public function getEntityContexts($entity)
     {
         $entityClass = (is_object($entity)) ? get_class($entity) : $entity;
@@ -198,6 +254,7 @@ class ContextService
 
     /**
      * @param $object
+     *
      * @return mixed
      */
     function objectToArray($object)
@@ -206,13 +263,18 @@ class ContextService
 
         if (is_array($object) || is_object($object)) {
             foreach ($object as $key => $value) {
-                $array[$key] = (is_array($value) || is_object($value)) ? $this->objectToArray($value): $value;
+                $array[$key] = (is_array($value) || is_object($value)) ? $this->objectToArray($value) : $value;
             }
         }
 
         return $array;
     }
 
+    /**
+     * @param $entityClass
+     *
+     * @return mixed
+     */
     public function resolveEntityClass($entityClass)
     {
         $entities = $this->getEntities();
@@ -226,6 +288,10 @@ class ContextService
         return $entityClass;
     }
 
+    /**
+     * @param $entityClass
+     * @param $values
+     */
     public function addToQueue($entityClass, $values)
     {
         $this->queued[$entityClass] = array(
@@ -237,23 +303,36 @@ class ContextService
     /**
      * Returns all BigfootContext annotations
      *
-     * @param \ReflexionClass $reflClass
+     * @param \ReflectionClass $reflClass
+     *
      * @return array
      */
-    public function getContextAnnotations($reflClass)
+    public function getContextAnnotations(\ReflectionClass $reflClass)
     {
-        $reader = new AnnotationReader();
+        $reader      = new AnnotationReader();
         $annotations = $reader->getClassAnnotations($reflClass);
-        return array_values(array_filter($annotations, function($annotation) {
-            return get_class($annotation) == 'Bigfoot\Bundle\ContextBundle\Annotation\Bigfoot\Context';
-        }));
+
+        return array_values(
+            array_filter(
+                $annotations,
+                function ($annotation) {
+                    return get_class($annotation) == 'Bigfoot\Bundle\ContextBundle\Annotation\Bigfoot\Context';
+                }
+            )
+        );
     }
 
+    /**
+     * @return array
+     */
     public function getQueued()
     {
         return $this->queued;
     }
 
+    /**
+     * @return array
+     */
     public function clearQueue()
     {
         return $this->queued = array();
