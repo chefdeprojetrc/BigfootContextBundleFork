@@ -35,12 +35,31 @@ class ContextExtension extends Twig_Extension
     {
         return array(
             'get_context' => new Twig_Function_Method($this, 'getContext'),
+            'bigfoot_default_front_locale' => new Twig_Function_Method($this, 'getDefaultFrontLocale'),
         );
     }
 
+    /**
+     * @param string $name
+     * @param string $value
+     *
+     * @return mixed
+     * @throws \Bigfoot\Bundle\ContextBundle\Exception\NotImplementedException
+     * @throws \Exception
+     */
     public function getContext($name, $value = null)
     {
         return $this->contextService->get($name, $value);
+    }
+
+    /**
+     * @return string
+     * @throws \Bigfoot\Bundle\ContextBundle\Exception\NotImplementedException
+     * @throws \Exception
+     */
+    public function getDefaultFrontLocale()
+    {
+        return $this->contextService->getDefaultFrontLocale();
     }
 
     /**
