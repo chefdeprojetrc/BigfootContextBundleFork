@@ -59,17 +59,19 @@ class DoctrineSubscriber implements EventSubscriber
             $contextRepo   = $args->getEntityManager()->getRepository('BigfootContextBundle:Context');
             $context       = $contextRepo->findOneByEntityIdEntityClass($entity->getId(), $entityClass);
             $queued        = $this->contextService->getQueued();
-            $contextValues = $queued[$entityClass]['context_values'];
+            if (isset($queued[$entityClass])) {
+                $contextValues = $queued[$entityClass]['context_values'];
 
-            if ($context && $queued) {
-                $context->setContextValues($contextValues);
-            } elseif (!$context && $contextValues) {
-                $context = $this->createContext($entity->getId(), $entityClass, $contextValues);
-            }
+                if ($context && $queued) {
+                    $context->setContextValues($contextValues);
+                } elseif (!$context && $contextValues) {
+                    $context = $this->createContext($entity->getId(), $entityClass, $contextValues);
+                }
 
-            if ($context) {
-                $args->getEntityManager()->persist($context);
-                $args->getEntityManager()->flush();
+                if ($context) {
+                    $args->getEntityManager()->persist($context);
+                    $args->getEntityManager()->flush();
+                }
             }
         }
     }
