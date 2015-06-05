@@ -8,6 +8,7 @@ use Bigfoot\Bundle\ContextBundle\Loader\LoaderInterface;
 use Bigfoot\Bundle\ContextBundle\Loader\LoaderChain;
 use Bigfoot\Bundle\ContextBundle\Exception\NotFoundException;
 use Bigfoot\Bundle\ContextBundle\Exception\NotImplementedException;
+use Symfony\Component\HttpKernel\KernelInterface;
 
 /**
  * Class Context
@@ -34,19 +35,24 @@ class ContextService
     /** @var array  */
     private $computedContexts = array();
 
+    /** @var KernelInterface  */
+    private $kernel;
+
     /**
      * Construct ContextService
      *
      * @param LoaderChain $loaderChain
-     * @param array       $contexts
-     * @param array       $entities
+     * @param array $contexts
+     * @param array $entities
+     * @param \Symfony\Component\HttpKernel\KernelInterface $kernel
      */
-    public function __construct(LoaderChain $loaderChain, $contexts, $entities)
+    public function __construct(LoaderChain $loaderChain, $contexts, $entities, KernelInterface $kernel)
     {
         $this->loaderChain = $loaderChain;
         $this->loaders     = $loaderChain->getLoaders();
         $this->contexts    = $contexts;
         $this->entities    = $entities;
+        $this->kernel      = $kernel;
     }
 
     /**
@@ -163,6 +169,10 @@ class ContextService
      */
     public function getDefaultFrontLocale()
     {
+        if (!in_array($this->kernel->getEnvironment(), array('admin', 'admin_dev'))) {
+            return $this->get('language');
+        }
+
         $config = $this->get('language_back', true);
 
         if (isset($config['parameters']['default_front_locale'])) {

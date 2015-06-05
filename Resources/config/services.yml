@@ -8,6 +8,7 @@ services:
             - @bigfoot_context.chain.loader
             - %bigfoot_context.contexts%
             - %bigfoot_context.entities%
+            - @kernel
 
     # Context Manager
     bigfoot_context.manager.context:
