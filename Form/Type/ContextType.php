@@ -7,12 +7,12 @@ use Bigfoot\Bundle\ContextBundle\Exception\InvalidConfigurationException;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\PropertyAccess\Exception\NoSuchIndexException;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
-use Symfony\Component\Security\Core\SecurityContextInterface;
+use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 use Doctrine\ORM\EntityManager;
 use Doctrine\Common\Annotations\AnnotationReader;
 
@@ -23,7 +23,9 @@ class ContextType extends AbstractType
 {
     private $entityManager;
     private $session;
-    private $securityContext;
+
+    /** @var AuthorizationChecker $securityAuthorizationChecker */
+    private $securityAuthorizationChecker;
     private $contextService;
     private $contextManager;
     private $contexts;
@@ -31,15 +33,15 @@ class ContextType extends AbstractType
     /**
      * @param EntityManager $entityManager
      * @param SessionInterface $session
-     * @param SecurityContextInterface $securityContext
+     * @param AuthorizationChecker $securityAuthorizationChecker
      * @param ContextService $contextService
      * @param ContextManager $contextManager
      */
-    public function __construct(EntityManager $entityManager, SessionInterface $session, SecurityContextInterface $securityContext, ContextService $contextService, ContextManager $contextManager)
+    public function __construct(EntityManager $entityManager, SessionInterface $session, AuthorizationChecker $securityAuthorizationChecker, ContextService $contextService, ContextManager $contextManager)
     {
         $this->entityManager   = $entityManager;
         $this->session         = $session;
-        $this->securityContext = $securityContext;
+        $this->securityAuthorizationChecker = $securityAuthorizationChecker;
         $this->contextService  = $contextService;
         $this->contextManager  = $contextManager;
         $this->contexts        = $contextService->getContexts();
@@ -86,7 +88,7 @@ class ContextType extends AbstractType
                             $data = $context['multiple'] ? $contextValues[$contextValue] : $contextValues[$contextValue][0];
                         }
 
-                        if ($this->securityContext->isGranted('ROLE_ADMIN') or (isset($this->contexts[$context]) && (isset($allowedContexts) && count($allowedContexts[$contextValue])))) {
+                        if ($this->securityAuthorizationChecker->isGranted('ROLE_ADMIN') or (isset($this->contexts[$context]) && (isset($allowedContexts) && count($allowedContexts[$contextValue])))) {
                             $form->add(
                                 $contextValue,
                                 'choice',
@@ -118,7 +120,7 @@ class ContextType extends AbstractType
                     $dbContextValues = ($entityContexts) ? $entityContexts->getContextValues() : null;
 
                     foreach ($contexts as $key => $context) {
-                        if ($this->securityContext->isGranted('ROLE_ADMIN') or (isset($allowedContexts) && count($allowedContexts[$context['value']]))) {
+                        if ($this->securityAuthorizationChecker->isGranted('ROLE_ADMIN') or (isset($allowedContexts) && count($allowedContexts[$context['value']]))) {
                             $contextValues[$context['value']] = $form->get($context['value'])->getData();
 
                             foreach ($contextValues as &$contextValue) {
@@ -156,7 +158,7 @@ class ContextType extends AbstractType
 
         if ($allowedContexts) {
             foreach ($nContextValues as $key => $value) {
-                if (!in_array($key, $allowedContexts[$context]) && !$this->securityContext->isGranted('ROLE_ADMIN')) {
+                if (!in_array($key, $allowedContexts[$context]) && !$this->securityAuthorizationChecker->isGranted('ROLE_ADMIN')) {
                     unset($nContextValues[$key]);
                 }
             }
@@ -168,7 +170,7 @@ class ContextType extends AbstractType
     /**
      * @param OptionsResolverInterface $resolver
      */
-    public function setDefaultOptions(OptionsResolverInterface $resolver)
+    public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
             array(

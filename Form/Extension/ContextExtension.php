@@ -7,7 +7,7 @@ use Symfony\Component\Form\FormView;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\Options;
-use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Bridge\Doctrine\Form\ChoiceList\ORMQueryBuilderLoader;
 
@@ -28,7 +28,7 @@ class ContextExtension extends AbstractTypeExtension
         $this->contextRepository = $contextRepository;
     }
 
-    public function setDefaultOptions(OptionsResolverInterface $resolver)
+    public function configureOptions(OptionsResolver $resolver)
     {
         $loader = function (Options $options) {
             if ($options['contextualize'] === true || $options['query_builder'] !== null) {
@@ -44,7 +44,7 @@ class ContextExtension extends AbstractTypeExtension
             return null;
         };
 
-        $resolver->setOptional(array('contextualize'));
+        $resolver->setDefined(array('contextualize'));
     }
 
     public function getExtendedType()

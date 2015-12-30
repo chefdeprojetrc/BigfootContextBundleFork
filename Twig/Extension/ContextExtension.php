@@ -4,7 +4,7 @@ namespace Bigfoot\Bundle\ContextBundle\Twig\Extension;
 
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Twig_Extension;
-use Twig_Function_Method;
+use Twig_SimpleFunction;
 
 use Bigfoot\Bundle\ContentBundle\Entity\Page;
 use Bigfoot\Bundle\ContentBundle\Entity\Sidebar;
@@ -34,8 +34,8 @@ class ContextExtension extends Twig_Extension
     public function getFunctions()
     {
         return array(
-            'get_context' => new Twig_Function_Method($this, 'getContext'),
-            'bigfoot_default_front_locale' => new Twig_Function_Method($this, 'getDefaultFrontLocale'),
+            new Twig_SimpleFunction('get_context', array($this, 'getContext')),
+            new Twig_SimpleFunction('bigfoot_default_front_locale', array($this, 'getDefaultFrontLocale')),
         );
     }
 
