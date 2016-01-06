@@ -3,6 +3,7 @@
 namespace Bigfoot\Bundle\ContextBundle\Loader;
 
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Class AbstractLoader
@@ -21,11 +22,11 @@ abstract class AbstractLoader implements LoaderInterface
     protected $contexts;
 
     /**
-     * @param \Symfony\Component\HttpFoundation\Request $request
+     * @param RequestStack $requestStack
      */
-    public function setRequest(Request $request = null)
+    public function setRequest(RequestStack $requestStack = null)
     {
-        $this->request = $request;
+        $this->request = $requestStack->getCurrentRequest();
     }
 
     /**
