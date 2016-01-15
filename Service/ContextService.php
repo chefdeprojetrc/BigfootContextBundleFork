@@ -8,8 +8,11 @@ use Bigfoot\Bundle\ContextBundle\Loader\LoaderInterface;
 use Bigfoot\Bundle\ContextBundle\Loader\LoaderChain;
 use Bigfoot\Bundle\ContextBundle\Exception\NotFoundException;
 use Bigfoot\Bundle\ContextBundle\Exception\NotImplementedException;
+use Bigfoot\Bundle\ContextBundle\Exception\RequestNotSetException;
+use Bigfoot\Bundle\ContextBundle\Loader\AbstractLoader;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\KernelInterface;
-
 /**
  * Class Context
  *
@@ -38,6 +41,9 @@ class ContextService
     /** @var KernelInterface  */
     private $kernel;
 
+    /** @var  Request */
+    private $request;
+
     /**
      * Construct ContextService
      *
@@ -46,13 +52,14 @@ class ContextService
      * @param array $entities
      * @param \Symfony\Component\HttpKernel\KernelInterface $kernel
      */
-    public function __construct(LoaderChain $loaderChain, $contexts, $entities, KernelInterface $kernel)
+    public function __construct(LoaderChain $loaderChain, $contexts, $entities, KernelInterface $kernel, RequestStack $requestStack)
     {
         $this->loaderChain = $loaderChain;
         $this->loaders     = $loaderChain->getLoaders();
         $this->contexts    = $contexts;
         $this->entities    = $entities;
         $this->kernel      = $kernel;
+        $this->request     = $requestStack->getCurrentRequest();
     }
 
     /**
@@ -68,6 +75,10 @@ class ContextService
     public function get($name, $returnConfiguration = false, $value = null)
     {
         $context = $this->getConfig($name);
+
+        if (null === $this->request) {
+            throw new RequestNotSetException("The request needs to be set - please use ContextService::setRequest");
+        }
 
         if ($value !== null) {
             $contextConfiguration = null;
@@ -101,6 +112,10 @@ class ContextService
                 throw new NotImplementedException(
                     'A ContextLoader service must implement the Bigfoot\Bundle\ContextBundle\Loader\LoaderInterface.'
                 );
+            }
+
+            if ($loader instanceof AbstractLoader) {
+                $loader->setRequest($this->request);
             }
 
             $fContext = $loader->getValue();
@@ -349,5 +364,23 @@ class ContextService
     public function clearQueue()
     {
         return $this->queued = array();
+    }
+
+    /**
+     * @return Request
+     */
+    public function getRequest()
+    {
+        return $this->request;
+    }
+
+    /**
+     * @param Request $request
+     * @return self
+     */
+    public function setRequest($request)
+    {
+        $this->request = $request;
+        return $this;
     }
 }

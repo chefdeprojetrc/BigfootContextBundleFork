@@ -9,6 +9,7 @@ services:
             - %bigfoot_context.contexts%
             - %bigfoot_context.entities%
             - '@kernel'
+            - '@request_stack'
 
     # Context Manager
     bigfoot_context.manager.context:
@@ -100,7 +101,7 @@ services:
         class: Bigfoot\Bundle\ContextBundle\Loader\AbstractLoader
         abstract: true
         calls:
-            - [setRequest, ['@request_stack']]
+            - [setRequestFromStack, ['@request_stack']]
             - [setContexts, ['%bigfoot_context.contexts%']]
 
     # BackOffice Language Loader
