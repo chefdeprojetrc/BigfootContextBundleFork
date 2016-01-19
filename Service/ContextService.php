@@ -76,9 +76,9 @@ class ContextService
     {
         $context = $this->getConfig($name);
 
-        if (null === $this->request) {
-            throw new RequestNotSetException("The request needs to be set - please use ContextService::setRequest");
-        }
+        //if (null === $this->request) {
+            //throw new RequestNotSetException("The request needs to be set - please use ContextService::setRequest");
+        //}
 
         if ($value !== null) {
             $contextConfiguration = null;
