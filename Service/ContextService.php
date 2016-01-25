@@ -52,14 +52,17 @@ class ContextService
      * @param array $entities
      * @param \Symfony\Component\HttpKernel\KernelInterface $kernel
      */
-    public function __construct(LoaderChain $loaderChain, $contexts, $entities, KernelInterface $kernel, RequestStack $requestStack)
+    public function __construct(LoaderChain $loaderChain, $contexts, $entities, KernelInterface $kernel, RequestStack $requestStack = null)
     {
         $this->loaderChain = $loaderChain;
         $this->loaders     = $loaderChain->getLoaders();
         $this->contexts    = $contexts;
         $this->entities    = $entities;
         $this->kernel      = $kernel;
-        $this->request     = $requestStack->getCurrentRequest();
+
+        if (null !== $requestStack) {
+            $this->request     = $requestStack->getCurrentRequest();
+        }
     }
 
     /**
