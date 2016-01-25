@@ -11,7 +11,7 @@
         }
     ],
     "require": {
-        "bigfoot/core-bundle": "~2.2"
+        "bigfoot/core-bundle": "~3.0"
     },
     "autoload": {
         "psr-0": { "Bigfoot\\Bundle\\ContextBundle": "" }
