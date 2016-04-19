@@ -9,6 +9,7 @@ use Symfony\Component\Form\FormFactory;
 use Bigfoot\Bundle\CoreBundle\Event\FormEvent;
 use Bigfoot\Bundle\CoreBundle\Annotation\Bigfoot\Context;
 use Bigfoot\Bundle\ContextBundle\Service\ContextService;
+use Bigfoot\Bundle\ContextBundle\Form\Type\ContextType;
 
 /**
  * Form Subscriber
@@ -53,7 +54,7 @@ class FormSubscriber implements EventSubscriberInterface
 
             if ($contexts) {
                 $contextForm = $this->formFactory->create(
-                    'bigfoot_context',
+                    ContextType::class,
                     $form->getData(),
                     array(
                         'entityClass' => $entityClass,

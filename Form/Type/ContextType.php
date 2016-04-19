@@ -4,6 +4,7 @@ namespace Bigfoot\Bundle\ContextBundle\Form\Type;
 
 use Bigfoot\Bundle\ContextBundle\Entity\ContextRepository;
 use Bigfoot\Bundle\ContextBundle\Exception\InvalidConfigurationException;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\PropertyAccess\Exception\NoSuchIndexException;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
@@ -91,9 +92,9 @@ class ContextType extends AbstractType
                         if ($this->securityAuthorizationChecker->isGranted('ROLE_ADMIN') or (isset($this->contexts[$context]) && (isset($allowedContexts) && count($allowedContexts[$contextValue])))) {
                             $form->add(
                                 $contextValue,
-                                'choice',
+                                ChoiceType::class,
                                 array(
-                                    'choices'     => $this->handleContextValues($allowedContexts, $contextValue, $this->contexts[$contextValue]['values']),
+                                    'choices'     => array_flip($this->handleContextValues($allowedContexts, $contextValue, $this->contexts[$contextValue]['values'])),
                                     'data'        => $data,
                                     'multiple'    => isset($context['multiple']) && $context['multiple'],
                                     'mapped'      => false,

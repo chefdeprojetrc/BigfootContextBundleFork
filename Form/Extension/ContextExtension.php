@@ -2,6 +2,7 @@
 
 namespace Bigfoot\Bundle\ContextBundle\Form\Extension;
 
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractTypeExtension;
 use Symfony\Component\Form\FormView;
 use Symfony\Component\Form\FormInterface;
@@ -49,6 +50,6 @@ class ContextExtension extends AbstractTypeExtension
 
     public function getExtendedType()
     {
-        return 'entity';
+        return EntityType::class;
     }
 }

@@ -57,7 +57,7 @@ services:
         arguments:
             - '@bigfoot_context.repository.context'
         tags:
-            - { name: form.type_extension, alias: entity, extended_type: entity }
+            - { name: form.type_extension, alias: entity, extended_type: Symfony\Bridge\Doctrine\Form\Type\EntityType }
 
     # Context Twig Extension
     bigfoot_context.twig.extension.context:
