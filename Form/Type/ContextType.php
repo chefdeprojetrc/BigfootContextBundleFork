@@ -123,7 +123,12 @@ class ContextType extends AbstractType
 
                             foreach ($contextValues as &$contextValue) {
                                 if (!is_array($contextValue)) {
-                                    $contextValue = array($contextValue);
+                                    $contextValue = array((string)$contextValue);
+                                }
+                                else {
+                                    foreach ($contextValue as &$val) {
+                                        $val = (string)$val;
+                                    }
                                 }
                             }
 

@@ -89,7 +89,7 @@ class ContextRepository extends EntityRepository
                 }
 
                 foreach ($values as $value) {
-                    $regex[] = new Expr\Comparison('REGEXP(c.contextValues, \'[a-z0-9:;\{}\"]*'.$contextValue.'[a-z0-9:;\{\"]*'.$value.'.*\}\')', Expr\Comparison::EQ, 1);
+                    $regex[] = new Expr\Comparison('REGEXP(c.contextValues, \'[a-z0-9:;\{}\"]*'.$contextValue.'[a-z0-9:;\"]*\{.*s:[0-9]+:"'.$value.'".*\}\')', Expr\Comparison::EQ, 1);
                 }
 
                 $regex[] = new Expr\Comparison('REGEXP(c.contextValues, \'[a-z0-9:;\{}\"]*'.$contextValue.'[a-z0-9:;\"]*\{\}\')', Expr\Comparison::EQ, 1);
