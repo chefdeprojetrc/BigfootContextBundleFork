@@ -82,12 +82,19 @@ class DoctrineSubscriber implements EventSubscriber
     public function postFlush(PostFlushEventArgs $args)
     {
         $entityManager = $args->getEntityManager();
+        $contextsCache = array();
 
         foreach ($entityManager->getUnitOfWork()->getIdentityMap() as $key => $entities) {
             foreach ($entities as $entityId => $entity) {
                 $changeSet   = $entityManager->getUnitOfWork()->getEntityChangeSet($entity);
                 $entityClass = $this->contextService->resolveEntityClass(get_class($entity));
-                $contexts    = $this->contextService->getEntityContexts($entityClass);
+
+                if(isset($contextsCache[$entityClass])) {
+                    $contexts = $contextsCache[$entityClass];
+                } else {
+                    $contexts    = $this->contextService->getEntityContexts($entityClass);
+                    $contextsCache[$entityClass] = $contexts;
+                }
 
                 if (count($contexts) && count($changeSet)) {
                     $queued = $this->contextService->getQueued();
